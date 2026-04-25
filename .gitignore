@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+.next/
+.vercel/
+.worker-next/
+out/
+
+# Cloudflare local dev state
+.wrangler/
+
+# Env files — NEVER commit these
+.env.local
+.env*.local
+
+# Testing
+coverage/
+playwright-report/
+test-results/
+
+# Misc
+*.log
+npm-debug.log*
+.DS_Store
+*.tsbuildinfo
