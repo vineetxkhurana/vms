@@ -8,9 +8,10 @@ import { useAuth } from '@/hooks/useAuth'
 import { Icon } from './Icon'
 
 const NAV_LINKS = [
-  { href: '/',         label: 'Home',     exact: true },
+  { href: '/',         label: 'Home',    exact: true },
   { href: '/products', label: 'Products', exact: false },
   { href: '/orders',   label: 'Orders',   exact: false },
+  { href: '/trust',    label: 'Trust & Licenses', exact: false },
 ]
 
 const BOTTOM_TABS = [

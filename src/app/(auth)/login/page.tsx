@@ -1,14 +1,44 @@
 'use client'
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { Icon } from '@/components/ui/Icon'
 
 type Step = 'identifier' | 'otp' | 'password'
 
+const GOOGLE_ERRORS: Record<string, string> = {
+  google_cancelled:        'Google sign-in was cancelled.',
+  oauth_misconfigured:     'Google sign-in is not configured yet.',
+  google_token_failed:     'Failed to authenticate with Google. Please try again.',
+  google_profile_failed:   'Could not retrieve your Google profile.',
+  google_email_unverified: 'Your Google account email is not verified.',
+  db_unavailable:          'Service temporarily unavailable.',
+  user_creation_failed:    'Could not create your account. Please try again.',
+}
+
+function GoogleIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908C16.658 14.233 17.64 11.925 17.64 9.2z" fill="#4285F4"/>
+      <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
+      <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+      <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+    </svg>
+  )
+}
+
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginPageInner />
+    </Suspense>
+  )
+}
+
+function LoginPageInner() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [identifier, setIdentifier] = useState('')
   const [step, setStep]             = useState<Step>('identifier')
   const [otp, setOtp]               = useState('')
@@ -16,6 +46,24 @@ export default function LoginPage() {
   const [loading, setLoading]       = useState(false)
 
   const isPhone = /^[6-9]\d{9}$/.test(identifier.trim())
+
+  // Handle Google OAuth redirect: show errors, sync pub-cookie -> localStorage
+  useEffect(() => {
+    const error = searchParams.get('error')
+    if (error) toast.error(GOOGLE_ERRORS[error] ?? 'Sign-in failed. Please try again.')
+
+    const match = document.cookie.match(/vms_token_pub=([^;]+)/)
+    if (match) {
+      try {
+        const token = decodeURIComponent(match[1])
+        const payload = JSON.parse(atob(token.split('.')[1]))
+        localStorage.setItem('vms_token', token)
+        localStorage.setItem('vms_user', JSON.stringify({ id: payload.sub, name: payload.name, role: payload.role }))
+        document.cookie = 'vms_token_pub=; Max-Age=0; path=/'
+        router.replace(['admin', 'staff'].includes(payload.role) ? '/admin' : '/')
+      } catch { /* token parse failed */ }
+    }
+  }, [router])
 
   const sendOTP = async () => {
     setLoading(true)
@@ -27,8 +75,7 @@ export default function LoginPage() {
     const data = await res.json() as any
     setLoading(false)
     if (!res.ok) { toast.error(data.error ?? 'Failed to send OTP'); return }
-    if (data.dev_code) toast(`Dev OTP: ${data.dev_code}`, { icon: '🔑', duration: 20000 })
-    toast.success(`OTP sent to ${isPhone ? 'your phone' : 'your email'}`)
+    toast.success(`OTP sent to ${isPhone ? 'your phone' : 'your email'}. Check server console in dev mode.`)
     setStep('otp')
   }
 
@@ -88,6 +135,25 @@ export default function LoginPage() {
 
         {/* Card */}
         <div className="glass rounded-3xl p-8">
+          {/* Google sign-in — shown only on the first step */}
+          {step === 'identifier' && (
+            <>
+              <a
+                href="/api/auth/google"
+                className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-full font-semibold text-sm transition-all mb-5 hover:bg-white/10"
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: '#e2eaf4' }}
+              >
+                <GoogleIcon />
+                Continue with Google
+              </a>
+              <div className="flex items-center gap-3 mb-5">
+                <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
+                <span className="text-xs text-on-surface-muted">or</span>
+                <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
+              </div>
+            </>
+          )}
+
           {/* Step indicator */}
           <div className="flex items-center gap-2 mb-8">
             {(['identifier','otp'] as Step[]).map((s, i) => (
@@ -131,11 +197,11 @@ export default function LoginPage() {
                   style={{ background: 'linear-gradient(135deg,#00c2ff,#7c3aed)', border: 'none' }}
                 >
                   {loading ? <Icon name="autorenew" className="animate-spin" /> : <Icon name="send" />}
-                  {loading ? 'Sending…' : 'Send OTP'}
+                  {loading ? 'Sending\u2026' : 'Send OTP'}
                 </button>
                 <div className="text-center">
                   <button type="button" onClick={() => setStep('password')} className="text-xs text-on-surface-muted hover:text-primary transition-colors">
-                    Use password instead →
+                    Use password instead \u2192
                   </button>
                 </div>
               </>
@@ -166,10 +232,10 @@ export default function LoginPage() {
                   style={{ background: 'linear-gradient(135deg,#00c2ff,#7c3aed)', border: 'none' }}
                 >
                   {loading ? <Icon name="autorenew" className="animate-spin" /> : <Icon name="check_circle" />}
-                  {loading ? 'Verifying…' : 'Verify OTP'}
+                  {loading ? 'Verifying\u2026' : 'Verify OTP'}
                 </button>
                 <button type="button" onClick={() => { setStep('identifier'); setOtp('') }} className="text-xs text-on-surface-muted hover:text-primary transition-colors text-center">
-                  ← Change email/phone
+                  \u2190 Change email/phone
                 </button>
                 <button type="button" onClick={sendOTP} className="text-xs text-primary hover:underline text-center">
                   Resend OTP
@@ -194,10 +260,10 @@ export default function LoginPage() {
                   style={{ background: 'linear-gradient(135deg,#00c2ff,#7c3aed)', border: 'none' }}
                 >
                   {loading ? <Icon name="autorenew" className="animate-spin" /> : <Icon name="lock" />}
-                  {loading ? 'Signing in…' : 'Sign In'}
+                  {loading ? 'Signing in\u2026' : 'Sign In'}
                 </button>
                 <button type="button" onClick={() => setStep('identifier')} className="text-xs text-on-surface-muted hover:text-primary transition-colors text-center">
-                  Use OTP instead →
+                  Use OTP instead \u2192
                 </button>
               </>
             )}
@@ -212,4 +278,3 @@ export default function LoginPage() {
     </div>
   )
 }
-

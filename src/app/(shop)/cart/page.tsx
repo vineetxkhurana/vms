@@ -1,13 +1,47 @@
 'use client'
+import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCart } from '@/hooks/useCart'
 import { calcTotals } from '@/lib/pricing'
 
+type ResolvedItem = { product_id: number; unit_price: number; mrp: number; line_total: number; was_discounted: boolean }
+type Preview = { items: ResolvedItem[]; subtotal: number; delivery: number; total: number } | null
+
 export default function CartPage() {
   const { items, update, remove } = useCart()
-  const subtotal = items.reduce((s, i) => s + i.product.price * i.quantity, 0)
-  const { gst, delivery, total } = calcTotals(subtotal)
+  const [preview, setPreview] = useState<Preview>(null)
+
+  // Fallback: use MRP while preview loads
+  const mrpSubtotal = items.reduce((s, i) => s + i.product.price * i.quantity, 0)
+  const fallback = calcTotals(mrpSubtotal)
+
+  const subtotal = preview?.subtotal ?? fallback.subtotal
+  const delivery = preview?.delivery ?? fallback.delivery
+  const total    = preview?.total ?? fallback.total
+
+  const priceMap = new Map(preview?.items.map(i => [i.product_id, i]) ?? [])
+
+  const fetchPreview = useCallback(async () => {
+    if (items.length === 0) { setPreview(null); return }
+    const token = localStorage.getItem('vms_token')
+    try {
+      const res = await fetch('/api/cart/preview', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ items: items.map(i => ({ product_id: i.product.id, quantity: i.quantity })) }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setPreview(data as Preview)
+      }
+    } catch { /* use fallback */ }
+  }, [items])
+
+  useEffect(() => { fetchPreview() }, [fetchPreview])
   const fmt = (p: number) => (p / 100).toFixed(2)
 
   if (items.length === 0) {
@@ -45,7 +79,22 @@ export default function CartPage() {
                       {item.product.variant_label}
                     </span>
                   )}
-                  <div style={{ fontSize: 18, fontWeight: 800, color: '#00c2ff', fontFamily: 'Manrope, sans-serif' }}>₹{fmt(item.product.price)}</div>
+                  {(() => {
+                    const resolved = priceMap.get(item.product.id)
+                    const unitPrice = resolved?.unit_price ?? item.product.price
+                    const wasDiscounted = resolved?.was_discounted ?? false
+                    return (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontSize: 18, fontWeight: 800, color: '#00c2ff', fontFamily: 'Manrope, sans-serif' }}>₹{fmt(unitPrice)}</span>
+                        {wasDiscounted && (
+                          <>
+                            <span style={{ fontSize: 13, color: '#5a7fa0', textDecoration: 'line-through' }}>₹{fmt(item.product.price)}</span>
+                            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 100, background: 'rgba(52,211,153,0.15)', color: '#34d399', border: '1px solid rgba(52,211,153,0.3)' }}>Bulk</span>
+                          </>
+                        )}
+                      </div>
+                    )
+                  })()}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(0,194,255,0.08)', border: '1px solid rgba(0,194,255,0.2)', borderRadius: 100, padding: '4px 8px' }}>
@@ -63,16 +112,22 @@ export default function CartPage() {
           <div style={{ background: 'rgba(10,20,45,0.7)', backdropFilter: 'blur(18px)', border: '1px solid rgba(0,194,255,0.15)', borderRadius: 20, padding: '32px 28px', position: 'sticky', top: 100 }}>
             <h3 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, fontSize: 20, color: '#e8f4fd', marginBottom: 28 }}>Order Summary</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 28 }}>
-              {[
-                { label: 'Subtotal',   value: `₹${fmt(subtotal)}` },
-                { label: 'Delivery',   value: `₹${fmt(delivery)}` },
-                { label: 'GST (5%)',   value: `₹${fmt(gst)}`,     muted: true },
-              ].map(row => (
-                <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: '#8fafc7', fontFamily: 'Inter, sans-serif' }}>
-                  <span>{row.label}</span>
-                  <span style={{ color: '#e8f4fd', fontWeight: 600 }}>{row.value}</span>
-                </div>
-              ))}
+              {(() => {
+                const savings = mrpSubtotal - subtotal
+                const rows: { label: string; value: string; highlight?: boolean }[] = [
+                  { label: 'Subtotal', value: `₹${fmt(mrpSubtotal)}` },
+                  { label: 'Delivery', value: delivery === 0 ? 'Free' : `₹${fmt(delivery)}` },
+                ]
+                if (savings > 0) {
+                  rows.push({ label: 'Bulk savings', value: `−₹${fmt(savings)}`, highlight: true })
+                }
+                return rows.map(row => (
+                  <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: row.highlight ? '#34d399' : '#8fafc7', fontFamily: 'Inter, sans-serif' }}>
+                    <span>{row.label}</span>
+                    <span style={{ color: row.highlight ? '#34d399' : '#e8f4fd', fontWeight: 600 }}>{row.value}</span>
+                  </div>
+                ))
+              })()}
             </div>
             <div style={{ borderTop: '1px solid rgba(0,194,255,0.12)', paddingTop: 20, marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: 16, color: '#e8f4fd' }}>Total</span>

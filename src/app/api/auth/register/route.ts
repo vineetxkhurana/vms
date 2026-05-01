@@ -5,12 +5,12 @@
  */
 import { hash } from 'bcryptjs'
 import { ok, err, rateLimit, getDB } from '@/lib/api'
-import { signToken } from '@/lib/auth'
 import type { UserRole } from '@/types'
 import { isPhone, normalisePhone } from '@/lib/otp'
+import { trackD1Event as trackEvent, analyticsContext } from '@/lib/observability'
 import { z } from 'zod'
 
-export const runtime = process.env.CF_PAGES ? 'edge' : 'nodejs'
+export const runtime = 'edge'
 
 const RegisterSchema = z.object({
   identifier: z.string().min(1).transform(s => s.trim().toLowerCase()),
@@ -19,7 +19,7 @@ const RegisterSchema = z.object({
 })
 
 export async function POST(req: Request) {
-  const db = getDB(req)
+  const db = await getDB(req)
   if (!db) return err('Service unavailable', 503)
 
   const ip = req.headers.get('cf-connecting-ip') ?? 'unknown'
@@ -49,14 +49,10 @@ export async function POST(req: Request) {
     .bind(normId, name, password_hash)
     .first<{ id: number; role: UserRole }>()
 
-  const token = await signToken({
-    sub:   String(result!.id),
-    email: isPhoneId ? null : normId,
-    phone: isPhoneId ? normId : null,
-    role:  result!.role,
-    name,
-  })
+  // Don't issue a session token — user must verify via OTP first
+  const { country, sessionId } = analyticsContext(req)
+  trackEvent(db, 'user_registered', { method: isPhoneId ? 'phone' : 'email' }, { userId: result!.id, sessionId: sessionId ?? undefined, country: country ?? undefined })
 
-  return ok({ token, user: { id: result!.id, name, role: result!.role }, needs_otp_verify: true })
+  return ok({ user: { id: result!.id, name, role: result!.role }, needs_otp_verify: true })
 }
 

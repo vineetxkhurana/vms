@@ -55,16 +55,29 @@ export async function verifyOTP(
   type: 'login' | 'register' | 'reset' = 'login',
 ): Promise<VerifyResult> {
   const now = Math.floor(Date.now() / 1000)
+
+  // Get the latest OTP for this identifier + type
   const row = await db
     .prepare(
-      'SELECT id, expires_at, used FROM otps WHERE identifier = ? AND code = ? AND type = ? ORDER BY id DESC LIMIT 1',
+      'SELECT id, code, expires_at, used, attempts FROM otps WHERE identifier = ? AND type = ? ORDER BY id DESC LIMIT 1',
     )
-    .bind(identifier, code, type)
-    .first<{ id: number; expires_at: number; used: number }>()
+    .bind(identifier, type)
+    .first<{ id: number; code: string; expires_at: number; used: number; attempts: number }>()
 
   if (!row) return 'invalid'
   if (row.used) return 'used'
   if (now > row.expires_at) return 'expired'
+
+  // Burn OTP after 5 failed attempts
+  const attempts = (row.attempts ?? 0) + 1
+  if (row.code !== code) {
+    if (attempts >= 5) {
+      await db.prepare('UPDATE otps SET used = 1 WHERE id = ?').bind(row.id).run()
+    } else {
+      await db.prepare('UPDATE otps SET attempts = ? WHERE id = ?').bind(attempts, row.id).run()
+    }
+    return 'invalid'
+  }
 
   // Mark as consumed
   await db.prepare('UPDATE otps SET used = 1 WHERE id = ?').bind(row.id).run()
@@ -76,7 +89,7 @@ export async function verifyOTP(
 async function sendEmail(to: string, code: string): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY
   if (!apiKey) {
-    console.log(`[OTP] Email to ${to}: ${code}`)
+    console.warn(`[OTP] Email to ${to}: ${code}`)
     return
   }
   await fetch('https://api.resend.com/emails', {
@@ -101,7 +114,7 @@ async function sendEmail(to: string, code: string): Promise<void> {
 async function sendSMS(phone: string, code: string): Promise<void> {
   const apiKey = process.env.FAST2SMS_API_KEY
   if (!apiKey) {
-    console.log(`[OTP] SMS to ${phone}: ${code}`)
+    console.warn(`[OTP] SMS to ${phone}: ${code}`)
     return
   }
   const localPhone = normalisePhone(phone)

@@ -7,10 +7,10 @@ import { ok, err, getDB } from '@/lib/api'
 import { requireAdmin } from '@/lib/auth'
 import { z } from 'zod'
 
-export const runtime = process.env.CF_PAGES ? 'edge' : 'nodejs'
+export const runtime = 'edge'
 
 export async function GET(req: Request) {
-  const db = getDB(req)
+  const db = await getDB(req)
   if (!db) return err('Service unavailable', 503)
   const auth = await requireAdmin(req)
   if (auth instanceof NextResponse) return auth
@@ -41,7 +41,7 @@ const PatchSchema = z.object({
 })
 
 export async function PATCH(req: Request) {
-  const db = getDB(req)
+  const db = await getDB(req)
   if (!db) return err('Service unavailable', 503)
   const auth = await requireAdmin(req)
   if (auth instanceof NextResponse) return auth

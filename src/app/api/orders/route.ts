@@ -1,10 +1,12 @@
 import { ok, err, rateLimit, getDB } from '@/lib/api'
-import { getUser } from '@/lib/auth'
+import { getUser, resolvePrice } from '@/lib/auth'
+import type { UserRole } from '@/types'
 import { createRazorpayOrder } from '@/lib/razorpay'
 import { calcTotals } from '@/lib/pricing'
+import { trackD1Event as trackEvent, analyticsContext } from '@/lib/observability'
 import { z } from 'zod'
 
-export const runtime = process.env.CF_PAGES ? 'edge' : 'nodejs'
+export const runtime = 'edge'
 
 const OrderSchema = z.object({
   items: z.array(z.object({ product_id: z.number(), quantity: z.number().min(1) })).min(1),
@@ -16,7 +18,7 @@ const OrderSchema = z.object({
 })
 
 export async function POST(req: Request) {
-  const db = getDB(req)
+  const db = await getDB(req)
   if (!db) return err('Service unavailable', 503)
   const user = await getUser(req)
   if (!user) return err('Unauthorized', 401)
@@ -46,15 +48,13 @@ export async function POST(req: Request) {
   for (const item of items) {
     const p = productMap.get(item.product_id)!
     if (p.stock < item.quantity) return err(`Insufficient stock for product ${item.product_id}`)
-    const price = user.role === 'retailer' && p.price_retailer != null ? p.price_retailer
-                : user.role === 'wholesaler' && p.price_wholesaler != null ? p.price_wholesaler
-                : p.price
+    const price = resolvePrice(p.price, p.price_retailer, p.price_wholesaler, user.role as UserRole, item.quantity)
     total += price * item.quantity
     lineItems.push({ product_id: item.product_id, quantity: item.quantity, price })
   }
 
-  // Add GST (5%) + flat ₹100 delivery fee
-  const { gst, delivery, total: grandTotal } = calcTotals(total)
+  // Calculate delivery + total
+  const { delivery, total: grandTotal } = calcTotals(total)
 
   // In dev (no Razorpay keys), create a mock order id; in prod this hits Razorpay
   let razorpayOrderId: string | null = null
@@ -90,11 +90,17 @@ export async function POST(req: Request) {
     return err('One or more items went out of stock. Please refresh and try again.', 409)
   }
 
-  return ok({ order_id: order.id, razorpay_order_id: razorpayOrderId, amount: grandTotal, subtotal: total, gst, delivery }, 201)
+  const { country, sessionId } = analyticsContext(req)
+  // Fire-and-forget — don't await, don't block the response
+  trackEvent(db, 'order_placed', { order_id: order.id, amount_paise: grandTotal, items: items.length }, { userId: Number(user.sub), sessionId: sessionId ?? undefined, country: country ?? undefined })
+
+  return ok({ order_id: order.id, razorpay_order_id: razorpayOrderId, amount: grandTotal, subtotal: total, delivery }, 201)
 }
 
+// Fire-and-forget analytics after return — no await needed
+
 export async function GET(req: Request) {
-  const db = getDB(req)
+  const db = await getDB(req)
   if (!db) return err('Service unavailable', 503)
   const user = await getUser(req)
   if (!user) return err('Unauthorized', 401)

@@ -1,4 +1,9 @@
 import { NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
+
+function captureException(error: unknown, ctx?: Record<string, unknown>) {
+  try { Sentry.captureException(error, ctx ? { extra: ctx } : undefined) } catch { /* no-op */ }
+}
 
 // Note: `runtime` is set per-route, NOT in lib files.
 export function ok<T>(data: T, status = 200) {
@@ -40,17 +45,26 @@ export async function rateLimit(
 }
 
 /** Helper: extract D1 DB from edge request env, with local dev fallback */
-export function getDB(req: Request): D1Database | null {
+export async function getDB(req: Request): Promise<D1Database | null> {
+  // next-on-pages: access Cloudflare bindings via getRequestContext()
+  try {
+    const { getRequestContext } = await import('@cloudflare/next-on-pages')
+    const db = (getRequestContext().env as unknown as { DB?: D1Database }).DB
+    if (db) return db
+  } catch {
+    // not in a next-on-pages context (local dev)
+  }
+
+  // Legacy path: some wrangler dev setups pass env on req
   const cloudflareDB = (req as any).env?.DB
   if (cloudflareDB) return cloudflareDB
 
-  // In local `next dev`, Cloudflare env is not present — use SQLite shim.
-  // Routes run as Node.js locally (CF_PAGES not set), so require works fine.
+  // Local `next dev` — use SQLite shim
   if (process.env.NODE_ENV === 'development') {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { getLocalDB } = require('./local-db') as { getLocalDB: () => D1Database | null }
+    const { getLocalDB } = await import('./local-db')
     return getLocalDB()
   }
+  captureException(new Error('getDB: no DB binding available'), { url: (req as any).url })
   return null
 }
 

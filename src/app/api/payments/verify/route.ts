@@ -3,7 +3,7 @@ import { verifyPaymentSignature } from '@/lib/razorpay'
 import { getUser } from '@/lib/auth'
 import { z } from 'zod'
 
-export const runtime = process.env.CF_PAGES ? 'edge' : 'nodejs'
+export const runtime = 'edge'
 
 const VerifySchema = z.object({
   razorpay_order_id:   z.string(),
@@ -12,7 +12,7 @@ const VerifySchema = z.object({
 })
 
 export async function POST(req: Request) {
-  const db = getDB(req)
+  const db = await getDB(req)
   if (!db) return err('Service unavailable', 503)
 
   // Must be a logged-in user — prevents spoofed verify calls
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
   if (!valid) return err('Payment verification failed', 400)
 
   // Only update orders belonging to this user — prevents user A confirming user B's order
-  const result = await db
+  const _result = await db
     .prepare(`
       UPDATE orders
       SET status = 'paid', razorpay_payment_id = ?

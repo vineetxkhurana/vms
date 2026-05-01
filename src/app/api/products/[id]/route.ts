@@ -2,10 +2,10 @@ import { NextResponse } from 'next/server'
 import { ok, err, getDB } from '@/lib/api'
 import { getUser, requireAdmin, resolvePrice } from '@/lib/auth'
 
-export const runtime = process.env.CF_PAGES ? 'edge' : 'nodejs'
+export const runtime = 'edge'
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const db = getDB(req)
+  const db = await getDB(req)
   if (!db) return err('Service unavailable', 503)
   const { id } = await params
   const user = await getUser(req)
@@ -42,7 +42,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 }
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const db = getDB(req)
+  const db = await getDB(req)
   if (!db) return err('Service unavailable', 503)
   const auth = await requireAdmin(req)
   if (auth instanceof NextResponse) return auth
@@ -60,7 +60,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 }
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const db = getDB(req)
+  const db = await getDB(req)
   if (!db) return err('Service unavailable', 503)
   const auth = await requireAdmin(req)
   if (auth instanceof NextResponse) return auth

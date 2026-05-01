@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="#0a1628"/>
+  <rect x="10" y="10" width="180" height="180" rx="16" fill="rgba(0,194,255,0.06)" stroke="rgba(0,194,255,0.15)" stroke-width="1"/>
+  <text x="100" y="95" font-family="system-ui" font-size="48" text-anchor="middle" fill="rgba(0,194,255,0.3)">💊</text>
+  <text x="100" y="130" font-family="system-ui" font-size="12" text-anchor="middle" fill="rgba(143,175,199,0.6)">No image</text>
+</svg>

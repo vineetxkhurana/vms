@@ -29,7 +29,8 @@ export function useAuth() {
     return () => window.removeEventListener('storage', load)
   }, [])
 
-  const signOut = () => {
+  const signOut = async () => {
+    try { await fetch('/api/auth/logout', { method: 'POST' }) } catch { /* best-effort */ }
     localStorage.removeItem('vms_token')
     localStorage.removeItem('vms_user')
     setUser(null)

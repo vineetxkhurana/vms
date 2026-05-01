@@ -7,6 +7,8 @@ import { getServerDB } from '@/lib/server-db'
 import { resolvePrice } from '@/lib/auth'
 import type { ProductVariant } from '@/types'
 
+export const runtime = 'edge'
+
 async function getProduct(id: string) {
   const db = await getServerDB()
   if (!db) return null
@@ -61,13 +63,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         <div className="grid md:grid-cols-2 gap-12 items-start">
 
           {/* ── Image card ───────────────────────────────── */}
-          <div className="glass rounded-2xl p-10 flex items-center justify-center sticky top-24" style={{ minHeight: 360 }}>
+          <div className="rounded-2xl sticky top-24 overflow-hidden"
+            style={{ background: '#f0f4f8', border: '1px solid rgba(0,0,0,0.08)', minHeight: 360, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {product.image_url ? (
-              <div className="relative w-full h-80">
-                <Image src={product.image_url} alt={product.name} fill className="object-contain" />
+              <div className="relative w-full" style={{ aspectRatio: '1/1' }}>
+                <Image src={product.image_url} alt={product.name} fill
+                  style={{ objectFit: 'contain', padding: '24px' }} />
               </div>
             ) : (
-              <Icon name="medication" fill className="text-[160px] text-on-surface-muted opacity-30" />
+              <Icon name="medication" fill className="text-[120px] text-on-surface-muted opacity-20" />
             )}
           </div>
 
@@ -186,10 +190,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   <div className="glass rounded-2xl p-4 flex flex-col gap-3 hover:border-primary/40 transition-all cursor-pointer"
                     style={{ border: '1px solid rgba(0,194,255,0.1)' }}>
                     <div className="relative w-full h-24 rounded-xl overflow-hidden"
-                      style={{ background: 'rgba(0,194,255,0.04)', border: '1px solid rgba(0,194,255,0.08)' }}>
+                      style={{ background: '#f0f4f8', border: '1px solid rgba(0,0,0,0.06)' }}>
                       {v.image_url
                         ? <Image src={v.image_url} alt={v.name} fill style={{ objectFit: 'contain', padding: 8 }} />
-                        : <span className="flex h-full items-center justify-center text-3xl">💊</span>}
+                        : <span className="flex h-full items-center justify-center text-3xl opacity-30">💊</span>}
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-primary mb-0.5">{v.label}</p>

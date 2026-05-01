@@ -1,4 +1,5 @@
 'use client'
+export const runtime = 'edge'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
@@ -10,7 +11,8 @@ const ALL_NAV = [
   { href: '/admin',          icon: 'dashboard',      label: 'Dashboard',  adminOnly: true  },
   { href: '/admin/products', icon: 'inventory_2',    label: 'Inventory',  adminOnly: false },
   { href: '/admin/orders',   icon: 'receipt_long',   label: 'Orders',     adminOnly: false },
-  { href: '/admin/users',    icon: 'group',          label: 'Customers',  adminOnly: true  },
+  { href: '/admin/users',     icon: 'group',          label: 'Customers',  adminOnly: true  },
+  { href: '/admin/analytics', icon: 'analytics',      label: 'Analytics',  adminOnly: true  },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -83,7 +85,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             onClick={() => {
               localStorage.removeItem('vms_token')
               localStorage.removeItem('vms_user')
-              // Clear auth cookie
+              // Clear auth via server endpoint + localStorage
+              fetch('/api/auth/logout', { method: 'POST' }).catch(() => {})
+              localStorage.removeItem('vms_token')
+              localStorage.removeItem('vms_user')
               document.cookie = 'vms_token=; path=/; max-age=0'
               window.location.href = '/login'
             }}

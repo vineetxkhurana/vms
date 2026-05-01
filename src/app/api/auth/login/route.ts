@@ -5,12 +5,12 @@
  */
 import { compare } from 'bcryptjs'
 import { NextResponse } from 'next/server'
-import { ok, err, rateLimit, getDB } from '@/lib/api'
+import { err, rateLimit, getDB } from '@/lib/api'
 import { signToken } from '@/lib/auth'
 import type { UserRole } from '@/types'
 import { z } from 'zod'
 
-export const runtime = process.env.CF_PAGES ? 'edge' : 'nodejs'
+export const runtime = 'edge'
 
 const LoginSchema = z.object({
   identifier: z.string().min(1).transform(s => s.trim().toLowerCase()),
@@ -18,7 +18,7 @@ const LoginSchema = z.object({
 })
 
 export async function POST(req: Request) {
-  const db = getDB(req)
+  const db = await getDB(req)
   if (!db) return err('Service unavailable', 503)
 
   const ip = req.headers.get('cf-connecting-ip') ?? 'unknown'
@@ -49,7 +49,7 @@ export async function POST(req: Request) {
   })
 
   const res = NextResponse.json({ token, user: { id: user.id, name: user.name, role: user.role } })
-  res.cookies.set('vms_token', token, { path: '/', httpOnly: true, sameSite: 'lax', maxAge: 60 * 60 * 24 * 7 })
+  res.cookies.set('vms_token', token, { path: '/', httpOnly: true, sameSite: 'lax', secure: true, maxAge: 60 * 60 * 24 * 7 })
   return res
 }
 

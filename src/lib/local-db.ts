@@ -6,8 +6,6 @@
  * Setup once: `npm run db:local`  → applies migrations to local SQLite
  */
 
-/* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any */
-
 class LocalStatement {
   private sql: string
   private params: unknown[]
@@ -120,10 +118,17 @@ export function getLocalDB(): D1Database | null {
     sqlite.pragma('foreign_keys = ON')
 
     _localDB = new LocalDB(sqlite)
-    console.log(`[local-db] connected → ${dbPath}`)
+    console.warn(`[local-db] connected → ${dbPath}`)
     return _localDB as unknown as D1Database
-  } catch (e) {
+  } catch (_e) {
     console.warn('[local-db] better-sqlite3 unavailable, DB calls will 503. Run: npm run db:local')
     return null
   }
 }
+
+/**
+ * Server Component DB accessor.
+ * - CF Pages production: uses getRequestContext().env.DB
+ * - Local next dev: uses the SQLite shim from getLocalDB()
+ */
+

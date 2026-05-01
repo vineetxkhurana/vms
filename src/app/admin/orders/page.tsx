@@ -1,4 +1,5 @@
 'use client'
+export const runtime = 'edge'
 import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import toast from 'react-hot-toast'

@@ -3,10 +3,10 @@ import { NextResponse } from 'next/server'
 import { ok, err, getDB } from '@/lib/api'
 import { requireStaff } from '@/lib/auth'
 
-export const runtime = process.env.CF_PAGES ? 'edge' : 'nodejs'
+export const runtime = 'edge'
 
 export async function GET(req: Request) {
-  const db = getDB(req)
+  const db = await getDB(req)
   if (!db) return err('Service unavailable', 503)
   const auth = await requireStaff(req)
   if (auth instanceof NextResponse) return auth
@@ -50,7 +50,7 @@ export async function GET(req: Request) {
 }
 
 export async function PATCH(req: Request) {
-  const db = getDB(req)
+  const db = await getDB(req)
   if (!db) return err('Service unavailable', 503)
   const auth = await requireStaff(req)
   if (auth instanceof NextResponse) return auth

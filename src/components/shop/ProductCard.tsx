@@ -64,18 +64,24 @@ export default function ProductCard({ product }: Props) {
       )}
 
       <Link href={`/products/${activeId}`} style={{ textDecoration: 'none' }}>
-        <div style={{ height: 160, background: 'rgba(0,194,255,0.04)', borderRadius: 12, marginBottom: 12, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', border: '1px solid rgba(0,194,255,0.08)' }}>
+        <div style={{
+          aspectRatio: '4/3', background: '#f0f4f8', borderRadius: 12, marginBottom: 12,
+          overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          position: 'relative', border: '1px solid rgba(0,0,0,0.06)',
+        }}>
           {activeImg ? (
-            <Image src={activeImg} alt={displayName} fill style={{ objectFit: 'contain', padding: '16px' }} />
-          ) : (
-            <span style={{ fontSize: 40 }}>💊</span>
-          )}
+            <Image src={activeImg} alt={displayName} fill
+              style={{ objectFit: 'contain', padding: '10px' }}
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).parentElement!.querySelector('.img-fallback')?.removeAttribute('hidden') }}
+            />
+          ) : null}
+          <span className="img-fallback" hidden={!!activeImg} style={{ fontSize: 40, opacity: 0.4 }}>💊</span>
           {product.brand === 'VMS' && (
             <div style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(0,194,255,0.15)', border: '1px solid rgba(0,194,255,0.3)', color: '#00c2ff', borderRadius: 100, fontSize: 10, fontWeight: 700, padding: '2px 8px', fontFamily: 'Inter, sans-serif' }}>VMS Generic</div>
           )}
           {activeStock === 0 && (
-            <div style={{ position: 'absolute', inset: 0, background: 'rgba(5,13,26,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: '#8fafc7', fontFamily: 'Inter, sans-serif' }}>Out of Stock</span>
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(240,244,248,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#64748b', fontFamily: 'Inter, sans-serif' }}>Out of Stock</span>
             </div>
           )}
         </div>

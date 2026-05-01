@@ -7,7 +7,7 @@ import { ok, err, rateLimit, getDB } from '@/lib/api'
 import { sendOTP, isPhone, normalisePhone } from '@/lib/otp'
 import { z } from 'zod'
 
-export const runtime = process.env.CF_PAGES ? 'edge' : 'nodejs'
+export const runtime = 'edge'
 
 const Schema = z.object({
   identifier: z.string().min(1).max(200).transform(s => s.trim().toLowerCase()),
@@ -15,7 +15,7 @@ const Schema = z.object({
 })
 
 export async function POST(req: Request) {
-  const db = getDB(req)
+  const db = await getDB(req)
   if (!db) return err('Service unavailable', 503)
 
   const ip = req.headers.get('cf-connecting-ip') ?? 'unknown'
@@ -34,5 +34,7 @@ export async function POST(req: Request) {
   if (!isPhone(normId) && !emailRe.test(normId)) return err('Enter a valid email or 10-digit phone number')
 
   const { code } = await sendOTP(db, normId, type)
-  return ok({ ok: true, ...(code ? { dev_code: code } : {}) })
+  // In dev, log code to server console only — never expose in API response
+  if (code) console.warn(`[OTP DEV] ${normId}: ${code}`)
+  return ok({ ok: true })
 }

@@ -2,11 +2,12 @@ import { NextResponse } from 'next/server'
 import { ok, err, rateLimit, getDB } from '@/lib/api'
 import { getUser, requireAdmin, resolvePrice } from '@/lib/auth'
 
-export const runtime = process.env.CF_PAGES ? 'edge' : 'nodejs'
+export const runtime = 'edge'
 
 // GET /api/products?page=1&category=1&search=paracetamol&brand=VMS
+// GET /api/products?ids=1,2,3   (cart rehydration — returns fresh tier-priced products by ID)
 export async function GET(req: Request) {
-  const db = getDB(req)
+  const db = await getDB(req)
   if (!db) return ok({ products: [], page: 1, limit: 20 })
 
   const ip = req.headers.get('cf-connecting-ip') ?? 'unknown'
@@ -15,8 +16,31 @@ export async function GET(req: Request) {
   const user = await getUser(req)
   const { searchParams } = new URL(req.url)
 
+  // ── Cart rehydration mode: fetch specific product IDs with fresh tier prices ──
+  const idsParam = searchParams.get('ids')
+  if (idsParam) {
+    const ids = idsParam.split(',').map(Number).filter(n => n > 0 && Number.isInteger(n)).slice(0, 50)
+    if (ids.length === 0) return ok({ products: [] })
+
+    const { results } = await db
+      .prepare(`SELECT p.id, p.name, p.description, p.price, p.price_retailer, p.price_wholesaler,
+                  p.brand, p.stock, p.category_id, p.image_url, p.is_active,
+                  p.variant_group, p.variant_label, p.variant_type,
+                  c.name as category_name
+                FROM products p LEFT JOIN categories c ON p.category_id=c.id
+                WHERE p.id IN (${ids.map(() => '?').join(',')}) AND p.is_active=1`)
+      .bind(...ids)
+      .all<any>()
+
+    const products = results.map(p => ({
+      ...p,
+      price: resolvePrice(p.price, p.price_retailer, p.price_wholesaler, user?.role ?? null),
+    }))
+    return ok({ products })
+  }
+
   const page     = Math.max(1, Number(searchParams.get('page') ?? 1))
-  const limit    = 20
+  const limit    = Math.min(50, Math.max(1, Number(searchParams.get('limit') ?? 20)))
   const offset   = (page - 1) * limit
   const search   = searchParams.get('search')?.trim().slice(0, 100)
   const category = searchParams.get('category')
@@ -32,6 +56,14 @@ export async function GET(req: Request) {
   if (search)   { sql += ' AND (p.name LIKE ? OR p.description LIKE ?)'; params.push(`%${search}%`, `%${search}%`) }
   if (category) { sql += ' AND p.category_id=?'; params.push(Number(category)) }
   if (brand && ['VMS','other'].includes(brand)) { sql += ' AND p.brand=?'; params.push(brand) }
+
+  // Get total count for pagination
+  const countSql = `SELECT COUNT(*) as total FROM products p LEFT JOIN categories c ON p.category_id=c.id WHERE p.is_active=1`
+    + (search ? ' AND (p.name LIKE ? OR p.description LIKE ?)' : '')
+    + (category ? ' AND p.category_id=?' : '')
+    + (brand && ['VMS','other'].includes(brand) ? ' AND p.brand=?' : '')
+  const countRow = await db.prepare(countSql).bind(...params).first<{ total: number }>()
+  const total = countRow?.total ?? 0
 
   sql += ` ORDER BY p.id DESC LIMIT ${limit} OFFSET ${offset}`
 
@@ -80,7 +112,7 @@ export async function GET(req: Request) {
   })
 
   // Merge: standalone products + grouped primaries, preserve original DESC order
-  const allIds = new Map(priced.map((p, i) => [p.id, i]))
+  const _allIds = new Map(priced.map((p, i) => [p.id, i]))
   const firstIds = new Map([...groupMap.values()].map(m => [Math.min(...m.map(x => x.id)), true]))
 
   const products = priced
@@ -92,12 +124,12 @@ export async function GET(req: Request) {
       return p
     })
 
-  return ok({ products, page, limit })
+  return ok({ products, page, limit, total })
 }
 
 // POST /api/products — admin only
 export async function POST(req: Request) {
-  const db = getDB(req)
+  const db = await getDB(req)
   if (!db) return err('Service unavailable', 503)
   const auth = await requireAdmin(req)
   if (auth instanceof NextResponse) return auth

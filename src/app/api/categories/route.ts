@@ -1,9 +1,9 @@
 import { ok, getDB } from '@/lib/api'
 
-export const runtime = process.env.CF_PAGES ? 'edge' : 'nodejs'
+export const runtime = 'edge'
 
 export async function GET(req: Request) {
-  const db = getDB(req)
+  const db = await getDB(req)
   if (!db) return ok({ categories: [] })
 
   const { results } = await db

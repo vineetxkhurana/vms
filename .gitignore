@@ -24,3 +24,4 @@ test-results/
 npm-debug.log*
 .DS_Store
 *.tsbuildinfo
+public/images/products/

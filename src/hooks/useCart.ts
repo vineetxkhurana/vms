@@ -4,21 +4,22 @@ import type { CartItem, Product } from '@/types'
 
 const KEY = 'vms_cart'
 
+// ── Persisted shape (lean — no prices stored) ─────────────────────────────────
+type PersistedItem = { product_id: number; quantity: number }
+
 // ── Module-level singleton store ──────────────────────────────────────────────
-// All useCart() instances share this state, so adding from any ProductCard
+// All useCart() instances share this state so adding from any ProductCard
 // correctly accumulates rather than overwrites.
 let _items: CartItem[] = []
+let _hydrated = false
 const _listeners = new Set<() => void>()
 
 function _notify() { _listeners.forEach(fn => fn()) }
 
 function _persist() {
-  if (typeof window !== 'undefined') localStorage.setItem(KEY, JSON.stringify(_items))
-}
-
-function _load() {
   if (typeof window === 'undefined') return
-  try { _items = JSON.parse(localStorage.getItem(KEY) ?? '[]') } catch { _items = [] }
+  const lean: PersistedItem[] = _items.map(i => ({ product_id: i.product.id, quantity: i.quantity }))
+  localStorage.setItem(KEY, JSON.stringify(lean))
 }
 
 // ── Actions (operate on module-level _items) ──────────────────────────────────
@@ -52,12 +53,35 @@ export function useCart() {
   const [, rerender] = useState(0)
 
   useEffect(() => {
-    // Load from localStorage on first mount (only runs once per page load)
-    if (_items.length === 0) _load()
-    // Subscribe to store changes so re-renders propagate to all instances
     const handler = () => rerender(n => n + 1)
     _listeners.add(handler)
-    handler() // trigger initial render with loaded items
+
+    // Hydrate once per session from localStorage, then fetch fresh prices.
+    // Storing only product_id+qty ensures tier prices are always re-resolved
+    // from the server (prevents wholesaler paying retail price after refresh).
+    if (!_hydrated) {
+      _hydrated = true
+      try {
+        const raw: PersistedItem[] = JSON.parse(localStorage.getItem(KEY) ?? '[]')
+        if (raw.length > 0) {
+          const ids = raw.map(r => r.product_id).join(',')
+          fetch(`/api/products?ids=${ids}`)
+            .then(r => r.ok ? r.json() : { products: [] })
+            .then((data: unknown) => {
+              const products = (data as { products?: Product[] }).products ?? []
+              const productMap = new Map(products.map(p => [p.id, p]))
+              // Only keep items whose product still exists and is active
+              _items = raw
+                .filter(r => productMap.has(r.product_id))
+                .map(r => ({ product: productMap.get(r.product_id)!, quantity: r.quantity }))
+              _notify()
+            })
+            .catch(() => { /* network error — keep items empty */ })
+        }
+      } catch { /* corrupt storage — start fresh */ }
+    }
+
+    handler()
     return () => { _listeners.delete(handler) }
   }, [])
 
@@ -73,4 +97,9 @@ export function useCart() {
     total,
     count,
   }
+}
+
+// ── Exposed for testing only ──────────────────────────────────────────────────
+export function _resetCartForTests() {
+  _items = []; _hydrated = false; _listeners.clear()
 }

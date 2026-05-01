@@ -14,7 +14,7 @@
 
 import { err, ok, getDB } from '@/lib/api'
 
-export const runtime = process.env.CF_PAGES ? 'edge' : 'nodejs'
+export const runtime = 'edge'
 
 async function verifyWebhookSignature(
   rawBody: string,
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
   try { event = JSON.parse(rawBody) }
   catch { return err('Invalid JSON', 400) }
 
-  const db = getDB(req)
+  const db = await getDB(req)
   if (!db) return err('Service unavailable', 503)
 
   const { event: eventName, payload } = event
@@ -73,17 +73,44 @@ export async function POST(req: Request) {
     const orderId = payment?.order_id as string | undefined
     if (!orderId) return ok({ received: true })
 
-    // Log failed payment — don't cancel the order (customer may retry)
-    await db
-      .prepare(`
-        UPDATE orders
-        SET razorpay_payment_id = ?
-        WHERE razorpay_order_id = ?
-          AND status = 'pending'
-      `)
-      .bind(`FAILED:${payment?.id ?? 'unknown'}`, orderId)
-      .run()
+    // On payment failure: revert stock for the cancelled order so inventory is accurate.
+    // Use a transaction-like batch: mark order cancelled + restore stock quantities.
+    await db.batch([
+      db.prepare(`
+        UPDATE orders SET status = 'cancelled', razorpay_payment_id = ?
+        WHERE razorpay_order_id = ? AND status = 'pending'
+      `).bind(`FAILED:${payment?.id ?? 'unknown'}`, orderId),
+      db.prepare(`
+        UPDATE products SET stock = stock + oi.quantity
+        FROM order_items oi
+        JOIN orders o ON oi.order_id = o.id
+        WHERE o.razorpay_order_id = ? AND products.id = oi.product_id
+      `).bind(orderId),
+    ])
   }
+
+  // Cleanup stale pending orders older than 30 minutes and restore their stock.
+  // Runs opportunistically on every webhook call (low overhead, no cron needed).
+  await db.batch([
+    db.prepare(`
+      UPDATE products SET stock = stock + (
+        SELECT COALESCE(SUM(oi.quantity), 0) FROM order_items oi
+        JOIN orders o ON oi.order_id = o.id
+        WHERE o.status = 'pending'
+          AND o.created_at < unixepoch() - 1800
+          AND oi.product_id = products.id
+      )
+      WHERE id IN (
+        SELECT DISTINCT oi.product_id FROM order_items oi
+        JOIN orders o ON oi.order_id = o.id
+        WHERE o.status = 'pending' AND o.created_at < unixepoch() - 1800
+      )
+    `).bind(),
+    db.prepare(`
+      UPDATE orders SET status = 'cancelled'
+      WHERE status = 'pending' AND created_at < unixepoch() - 1800
+    `).bind(),
+  ])
 
   // Always return 200 — Razorpay retries on non-2xx responses
   return ok({ received: true })

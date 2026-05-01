@@ -1,4 +1,11 @@
 import type { NextConfig } from 'next'
+import { withSentryConfig } from '@sentry/nextjs'
+
+// Provide Cloudflare D1/R2 bindings in local `next dev` (reads wrangler.toml)
+if (process.env.NODE_ENV === 'development') {
+  const { setupDevPlatform } = require('@cloudflare/next-on-pages/next-dev')
+  setupDevPlatform()
+}
 
 const securityHeaders = [
   { key: 'X-DNS-Prefetch-Control',  value: 'on' },
@@ -35,6 +42,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: 'https', hostname: '*.r2.dev' },
       { protocol: 'https', hostname: 'pub-*.r2.dev' },
+      { protocol: 'https', hostname: 'pub-47fdbf3013fa480eaa61d770e3686eaf.r2.dev' },
     ],
   },
   // better-sqlite3 is a native module used only in local dev — never bundle it
@@ -56,5 +64,20 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default nextConfig
+export default withSentryConfig(nextConfig, {
+  // Sentry project settings — set in env or CI
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+
+  // Only upload source maps in CI/production to keep local builds fast
+  silent: true,
+  disableLogger: true,
+  sourcemaps: { disable: true }, // don't upload source maps (no SENTRY_AUTH_TOKEN in dev)
+
+  // Automatically instrument Next.js API routes and pages
+  autoInstrumentServerFunctions: true,
+  autoInstrumentMiddleware: true,
+  autoInstrumentAppDirectory: true,
+})
 

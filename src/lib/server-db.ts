@@ -17,9 +17,8 @@ export async function getServerDB(): Promise<any> {
   }
   if (process.env.NODE_ENV === 'development') {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { getLocalDB } = require('./local-db') as { getLocalDB: () => any }
-      return getLocalDB()
+      const mod = await import(/* webpackIgnore: true */ './local-db')
+      return mod.getLocalDB()
     } catch {
       return null
     }

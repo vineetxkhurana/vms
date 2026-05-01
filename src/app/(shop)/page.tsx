@@ -9,32 +9,55 @@ import type { Product } from '@/types'
 
 const HeroScene = dynamic(() => import('@/components/ui/HeroScene'), { ssr: false })
 
-const CATEGORIES = [
-  { label: 'Medicines',  icon: 'medication',        color: '#00c2ff' },
-  { label: 'Wellness',   icon: 'favorite',           color: '#00e5a0' },
-  { label: 'Skin Care',  icon: 'spa',                color: '#7c3aed' },
-  { label: 'Baby Care',  icon: 'child_care',         color: '#00c2ff' },
-  { label: 'First Aid',  icon: 'medical_services',   color: '#00e5a0' },
-  { label: 'Devices',    icon: 'devices',            color: '#7c3aed' },
-  { label: 'Ayurvedic',  icon: 'eco',                color: '#00c2ff' },
-]
+type Category = { id: number; name: string }
+
+// Icon + color for each category
+const CAT_META: Record<string, { icon: string; color: string }> = {
+  'Medicines':                 { icon: 'medication',                    color: '#00c2ff' },
+  'Vitamins & Supplements':    { icon: 'nutrition',                     color: '#00e5a0' },
+  'Skin Care':                 { icon: 'spa',                           color: '#7c3aed' },
+  'Baby Care':                 { icon: 'child_care',                    color: '#00c2ff' },
+  'First Aid':                 { icon: 'medical_services',              color: '#00e5a0' },
+  'Medical Devices':           { icon: 'monitor_heart',                 color: '#7c3aed' },
+  'Ayurvedic':                 { icon: 'eco',                           color: '#00c2ff' },
+  'Knee Support':              { icon: 'accessibility_new',             color: '#00e5a0' },
+  'Back & Abdominal Support':  { icon: 'airline_seat_recline_normal',   color: '#7c3aed' },
+  'Elbow & Arm Support':       { icon: 'sports_martial_arts',           color: '#00c2ff' },
+  'Wrist & Hand Support':      { icon: 'front_hand',                    color: '#00e5a0' },
+  'Ankle & Foot Support':      { icon: 'do_not_step',                   color: '#7c3aed' },
+  'Cervical & Neck Support':   { icon: 'person',                        color: '#00c2ff' },
+  'Shoulder Support':          { icon: 'sports_handball',               color: '#00e5a0' },
+  'Hot & Cold Therapy':        { icon: 'thermostat',                    color: '#7c3aed' },
+  'Bandages & Compression':    { icon: 'healing',                       color: '#00c2ff' },
+  'Body Massagers':            { icon: 'self_improvement',              color: '#00e5a0' },
+  'Weighing Scales':           { icon: 'scale',                         color: '#7c3aed' },
+  'Memory Foam':               { icon: 'king_bed',                      color: '#00c2ff' },
+  'Mobility Aids':             { icon: 'accessible',                    color: '#00e5a0' },
+  'Surgical Instruments':      { icon: 'biotech',                       color: '#7c3aed' },
+}
 
 const TRUST = [
-  { icon: 'local_shipping', title: 'Fast Delivery',   desc: 'Guaranteed safe arrival at your doorstep within 24 hours.' },
+  { icon: 'local_shipping', title: 'Fast Delivery',   desc: '24–48 hr local delivery right to your doorstep.' },
   { icon: 'verified_user',  title: '100% Genuine',    desc: 'Direct sourcing from certified medical manufacturers only.' },
   { icon: 'support_agent',  title: 'Expert Support',  desc: 'Certified pharmacists available 24/7 for your consultation.' },
 ]
 
 export default function HomePage() {
   const [products, setProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/products?page=1')
+    fetch('/api/products?page=1&limit=8')
       .then(r => r.json())
-      .then((d: any) => setProducts((d as { products?: Product[] }).products?.slice(0, 8) ?? []))
+      .then((d: any) => setProducts((d as { products?: Product[] }).products ?? []))
       .catch(() => {})
       .finally(() => setLoading(false))
+
+    fetch('/api/categories')
+      .then(r => r.json())
+      .then((d: any) => setCategories((d.categories ?? []) as Category[]))
+      .catch(() => {})
   }, [])
 
   return (
@@ -70,7 +93,7 @@ export default function HomePage() {
             {/* Badge */}
             <div className="slide-up inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-full border" style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.09)' }}>
               <span className="w-2 h-2 rounded-full bg-secondary live-dot inline-block flex-shrink-0" />
-              <span className="text-xs font-semibold text-on-surface-muted tracking-[0.18em] uppercase">Established 2000 · Trusted Pharmacy</span>
+              <span className="text-xs font-semibold text-on-surface-muted tracking-[0.18em] uppercase">Established 1999 · Trusted Pharmacy</span>
             </div>
 
             {/* Headline */}
@@ -83,7 +106,7 @@ export default function HomePage() {
             </h1>
 
             <p className="slide-up d2 text-lg text-on-surface-muted max-w-lg mb-10 font-light leading-relaxed">
-              Premium medicines &amp; healthcare essentials delivered to your doorstep. Trusted by 500+ families since 2000.
+              Premium medicines &amp; healthcare essentials delivered to your doorstep. Trusted by 500+ families since 1999.
             </p>
 
             {/* CTAs */}
@@ -105,7 +128,7 @@ export default function HomePage() {
 
             {/* Stats row */}
             <div className="slide-up d4 flex flex-wrap gap-8 mt-16 pt-10" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-              {[['50K+','Patients Served'],['2000','Founded'],['100%','Genuine'],['24hr','Delivery']].map(([n, l]) => (
+              {[['50K+','Patients Served'],['1999','Founded'],['100%','Genuine'],['24–48h','Delivery']].map(([n, l]) => (
                 <div key={l}>
                   <div className="font-display font-black text-2xl grad-text">{n}</div>
                   <div className="text-xs text-on-surface-muted mt-1 tracking-wide uppercase">{l}</div>
@@ -128,22 +151,25 @@ export default function HomePage() {
           </div>
 
           <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
-            {CATEGORIES.map(cat => (
-              <Link
-                key={cat.label}
-                href={`/products?search=${encodeURIComponent(cat.label)}`}
-                className="flex-shrink-0 glass glass-hover rounded-2xl flex flex-col items-center justify-center gap-3 p-6 transition-all duration-300 hover:-translate-y-1.5 cursor-pointer"
-                style={{ minWidth: 120, minHeight: 120 }}
-              >
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center"
-                  style={{ background: `${cat.color}18`, border: `1px solid ${cat.color}30` }}
+            {categories.map(cat => {
+              const meta = CAT_META[cat.name] ?? { icon: 'category', color: '#00c2ff' }
+              return (
+                <Link
+                  key={cat.id}
+                  href={`/products?category=${cat.id}`}
+                  className="flex-shrink-0 glass glass-hover rounded-2xl flex flex-col items-center justify-center gap-3 p-6 transition-all duration-300 hover:-translate-y-1.5 cursor-pointer"
+                  style={{ minWidth: 120, minHeight: 120 }}
                 >
-                  <Icon name={cat.icon} fill className="text-[24px]" style={{ color: cat.color }} />
-                </div>
-                <span className="text-sm font-semibold text-on-surface text-center">{cat.label}</span>
-              </Link>
-            ))}
+                  <div
+                    className="w-12 h-12 rounded-xl flex items-center justify-center"
+                    style={{ background: `${meta.color}18`, border: `1px solid ${meta.color}30` }}
+                  >
+                    <Icon name={meta.icon} fill className="text-[24px]" style={{ color: meta.color }} />
+                  </div>
+                  <span className="text-sm font-semibold text-on-surface text-center">{cat.name}</span>
+                </Link>
+              )
+            })}
           </div>
         </section>
 
@@ -207,11 +233,11 @@ export default function HomePage() {
             <div className="flex items-center gap-3 mb-4">
               <Image src="/vms-logo.svg" alt="VMS" width={110} height={36} style={{ height: 32, width: 'auto' }} />
             </div>
-            <p className="text-sm text-on-surface-muted leading-relaxed">Curating wellness and providing medical precision since 2000.</p>
+            <p className="text-sm text-on-surface-muted leading-relaxed">Curating wellness and providing medical precision since 1999.</p>
           </div>
 
           {[
-            { title: 'Explore', links: [{ href: '/products', label: 'Shop All' }, { href: '/orders', label: 'My Orders' }] },
+            { title: 'Explore', links: [{ href: '/products', label: 'Shop All' }, { href: '/orders', label: 'My Orders' }, { href: '/trust', label: 'Certifications' }] },
             { title: 'Policy',  links: [{ href: '#', label: 'Shipping Policy' }, { href: '#', label: 'Privacy' }] },
             { title: 'Contact', links: [{ href: '#', label: 'Vipan Medical Store' }, { href: '#', label: 'Punjab, India' }] },
           ].map(col => (
@@ -228,7 +254,7 @@ export default function HomePage() {
           ))}
         </div>
         <div className="max-w-7xl mx-auto px-8 mt-12 pt-8" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-          <p className="text-xs text-on-surface-muted">© 2024 Vipan Medical Store. Curating Wellness Since 2000.</p>
+          <p className="text-xs text-on-surface-muted">© 2024 Vipan Medical Store. Curating Wellness Since 1999.</p>
         </div>
       </footer>
     </>

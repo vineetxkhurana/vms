@@ -1,6 +1,7 @@
 import { SignJWT, jwtVerify } from 'jose'
 import { NextResponse } from 'next/server'
 import type { UserRole } from '@/types'
+import { RETAILER_QTY_THRESHOLD, WHOLESALER_QTY_THRESHOLD } from './pricing'
 
 const ALG = 'HS256'
 const EXPIRY = '7d'
@@ -70,15 +71,28 @@ export async function requireAdmin(req: Request): Promise<JWTPayload | NextRespo
   return user
 }
 
-/** Resolve the correct product price (paise) for a given user role */
+/**
+ * Resolve the correct product price (paise) based on user role AND quantity.
+ * The customer gets the best (lowest) tier from either their role or the
+ * quantity thresholds:
+ *   - 1–5 units  → MRP (unless role is retailer/wholesaler)
+ *   - 6–20 units → retailer price
+ *   - 21+ units  → wholesaler price
+ * Role always guarantees at least that tier regardless of quantity.
+ */
 export function resolvePrice(
   basePrice: number,
   retailerPrice: number | null | undefined,
   wholesalerPrice: number | null | undefined,
   role: UserRole | null,
+  quantity: number = 1,
 ): number {
-  if (role === 'retailer' && retailerPrice != null) return retailerPrice
-  if (role === 'wholesaler' && wholesalerPrice != null) return wholesalerPrice
+  // Determine effective tier: best of role-based or quantity-based
+  const isWholesaler = role === 'wholesaler' || quantity >= WHOLESALER_QTY_THRESHOLD
+  const isRetailer = role === 'retailer' || quantity >= RETAILER_QTY_THRESHOLD
+
+  if (isWholesaler && wholesalerPrice != null) return wholesalerPrice
+  if (isRetailer && retailerPrice != null) return retailerPrice
   return basePrice
 }
 

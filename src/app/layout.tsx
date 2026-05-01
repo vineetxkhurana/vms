@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
 import { Inter, Manrope } from 'next/font/google'
+import Script from 'next/script'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
+import { ObservabilityProvider } from '@/components/ui/ObservabilityProvider'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const manrope = Manrope({ subsets: ['latin'], variable: '--font-manrope', weight: ['400','600','700','800'] })
@@ -17,20 +19,31 @@ export const metadata: Metadata = {
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const cfAnalyticsToken = process.env.NEXT_PUBLIC_CF_ANALYTICS_TOKEN
+
   return (
     <html lang="en" className={`${inter.variable} ${manrope.variable}`}>
       <head>
-        {/* Preconnect so the font TCP handshake happens before the stylesheet resolves */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        {/* display=block: icons are invisible while loading rather than showing raw text */}
         <link
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block"
         />
+        {/* Cloudflare Web Analytics — privacy-first, no cookies */}
+        {cfAnalyticsToken && (
+          <Script
+            defer
+            src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon={`{"token": "${cfAnalyticsToken}"}`}
+            strategy="afterInteractive"
+          />
+        )}
       </head>
       <body>
-        {children}
+        <ObservabilityProvider>
+          {children}
+        </ObservabilityProvider>
         <Toaster
           position="top-right"
           toastOptions={{

@@ -21,6 +21,9 @@ export type Product = {
   variant_group: string | null
   variant_label: string | null
   variant_type: 'size' | 'flavor' | 'color' | null
+  batch_number?: string | null
+  expiry_date?: string | null
+  manufactured_date?: string | null
   /** Sibling variants (only present on "primary" products in listing) */
   variants?: ProductVariant[]
 }

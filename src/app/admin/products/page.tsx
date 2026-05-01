@@ -1,8 +1,10 @@
 'use client'
+export const runtime = 'edge'
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import toast from 'react-hot-toast'
 import type { Product } from '@/types'
-import Image from 'next/image'
+import Image from 'next/image' // eslint-disable-line @typescript-eslint/no-unused-vars
 import { Icon } from '@/components/ui/Icon'
 import { AdminTable } from '@/components/admin/AdminTable'
 import { useAdminAuth } from '@/hooks/useAdminAuth'
@@ -13,6 +15,7 @@ const EMPTY = {
   name: '', description: '', price: '', brand: 'other', stock: '', category_id: '',
   image_url: '', price_retailer: '', price_wholesaler: '',
   variant_group: '', variant_label: '', variant_type: 'none',
+  batch_number: '', expiry_date: '', manufactured_date: '',
 }
 
 const VARIANT_TYPES = [
@@ -61,6 +64,17 @@ function StockCell({ product, adminFetch, onSaved }: { product: Product; adminFe
 }
 
 
+/** Returns a color based on expiry proximity */
+function expiryColor(exp: string | null | undefined): string {
+  if (!exp) return '#8fafc7'
+  const expDate = new Date(exp + '-01')
+  const now = new Date()
+  const diffMonths = (expDate.getFullYear() - now.getFullYear()) * 12 + expDate.getMonth() - now.getMonth()
+  if (diffMonths < 0) return '#f87171'    // expired — red
+  if (diffMonths <= 3) return '#fbbf24'   // expiring soon — amber
+  return '#4ade80'                         // ok — green
+}
+
 export default function AdminProductsPage() {
   const [products, setProducts]   = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -95,7 +109,7 @@ export default function AdminProductsPage() {
     fetch('/api/categories').then(r => r.json()).then((d: any) => setCategories(d.categories ?? []))
   }, [ready])
 
-  const openNew = () => { setEditing(null); setForm(EMPTY); setModal(true) }
+  const openNew = () => { setEditing(null); setForm(EMPTY); setPreviewUrl(''); setModal(true); document.body.style.overflow = 'hidden' }
   const openEdit = (p: Product) => {
     setEditing(p)
     setForm({
@@ -107,19 +121,39 @@ export default function AdminProductsPage() {
       price_wholesaler: p.price_wholesaler  ? String(p.price_wholesaler / 100) : '',
       variant_group: p.variant_group ?? '', variant_label: p.variant_label ?? '',
       variant_type: p.variant_type ?? 'none',
+      batch_number: p.batch_number ?? '', expiry_date: p.expiry_date ?? '', manufactured_date: p.manufactured_date ?? '',
     })
     setModal(true)
+    setPreviewUrl('')
+    document.body.style.overflow = 'hidden'
   }
 
+  const [previewUrl, setPreviewUrl] = useState<string>('')
+
   const handleImageUpload = async (file: File) => {
+    // Immediately show local preview via blob URL — no waiting for server
+    const blob = URL.createObjectURL(file)
+    setPreviewUrl(blob)
     setUploading(true)
     const fd = new FormData()
     fd.append('file', file)
     try {
       const res = await adminFetch('/api/upload', { method: 'POST', body: fd })
       const d = await res.json() as any
-      if (res.ok) { setForm(f => ({ ...f, image_url: d.url })); toast.success('Image uploaded') }
-      else toast.error(d.error ?? 'Upload failed')
+      if (res.ok && d.url && !d.url.includes('placeholder')) {
+        // Real R2 URL — use it and release the blob
+        setForm(f => ({ ...f, image_url: d.url }))
+        URL.revokeObjectURL(blob)
+        setPreviewUrl('')
+        toast.success('Image uploaded')
+      } else {
+        // R2 not set up — keep the local blob preview and store it as-is
+        setForm(f => ({ ...f, image_url: blob }))
+        toast.success('Image set (stored locally — configure R2 for persistence)')
+      }
+    } catch {
+      toast.error('Upload failed')
+      setPreviewUrl('')
     } finally {
       setUploading(false)
     }
@@ -137,11 +171,14 @@ export default function AdminProductsPage() {
       variant_group:     form.variant_type !== 'none' ? (form.variant_group || null) : null,
       variant_label:     form.variant_type !== 'none' ? (form.variant_label || null) : null,
       variant_type:      form.variant_type !== 'none' ? form.variant_type : null,
+      batch_number:      form.batch_number || null,
+      expiry_date:       form.expiry_date || null,
+      manufactured_date: form.manufactured_date || null,
     }
     const url    = editing ? `/api/products/${editing.id}` : '/api/products'
     const method = editing ? 'PATCH' : 'POST'
     const res = await adminFetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-    if (res.ok) { toast.success(editing ? 'Updated' : 'Product added'); setModal(false); load() }
+    if (res.ok) { toast.success(editing ? 'Updated' : 'Product added'); setModal(false); document.body.style.overflow = ''; load() }
     else { const d = await res.json() as any; toast.error(d.error ?? 'Error') }
   }
 
@@ -175,7 +212,7 @@ export default function AdminProductsPage() {
       </div>
 
       <AdminTable
-        headers={['Product', 'Brand', 'Price', 'Retailer', 'Wholesaler', 'Stock', 'Status', 'Actions']}
+        headers={['Product', 'Brand', 'Price', 'Retailer', 'Wholesaler', 'Stock', 'Expiry', 'Status', 'Actions']}
         skeletonCols={[140, 60, 60, 60, 60, 60, 60, 60]}
         skeletonRows={6}
         loading={loading}
@@ -187,10 +224,10 @@ export default function AdminProductsPage() {
           <tr key={p.id} style={{ borderBottom: '1px solid rgba(0,194,255,0.06)' }} className="hover:bg-white/[0.02] transition-colors">
             <td className="px-4 py-3">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center"
-                  style={{ background: 'rgba(0,194,255,0.06)', border: '1px solid rgba(0,194,255,0.1)' }}>
+                <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center"
+                  style={{ background: p.image_url ? '#f0f4f8' : 'rgba(0,194,255,0.06)', border: '1px solid rgba(0,0,0,0.06)' }}>
                   {p.image_url
-                    ? <Image src={p.image_url} alt="" width={36} height={36} className="object-contain" />
+                    ? <img src={p.image_url} alt="" style={{ width: 40, height: 40, objectFit: 'contain', padding: 4 }} />
                     : <Icon name="medication" fill className="text-on-surface-muted" />}
                 </div>
                 <div>
@@ -210,6 +247,9 @@ export default function AdminProductsPage() {
             <td className="px-4 py-3 text-on-surface-muted text-xs">{p.price_retailer ? `₹${(p.price_retailer / 100).toFixed(0)}` : '—'}</td>
             <td className="px-4 py-3 text-on-surface-muted text-xs">{p.price_wholesaler ? `₹${(p.price_wholesaler / 100).toFixed(0)}` : '—'}</td>
             <td className="px-4 py-3"><StockCell product={p} adminFetch={adminFetch} onSaved={load} /></td>
+            <td className="px-4 py-3 text-xs font-mono" style={{ color: expiryColor(p.expiry_date) }}>
+              {p.expiry_date ?? '—'}
+            </td>
             <td className="px-4 py-3">
               <span style={{ padding: '2px 10px', borderRadius: 100, fontSize: 11, fontWeight: 700, background: p.is_active ? 'rgba(0,229,160,0.1)' : 'rgba(239,68,68,0.08)', border: p.is_active ? '1px solid rgba(0,229,160,0.25)' : '1px solid rgba(239,68,68,0.2)', color: p.is_active ? '#00e5a0' : '#ef4444' }}>
                 {p.is_active ? 'Active' : 'Hidden'}
@@ -229,12 +269,13 @@ export default function AdminProductsPage() {
         ))}
       </AdminTable>
 
-      {/* ── Add / Edit Modal ── */}
-      {modal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(10px)' }}
-          onClick={() => setModal(false)}>
-          <div className="glass rounded-3xl p-8 w-full max-w-2xl max-h-[92vh] overflow-y-auto"
+      {/* ── Add / Edit Modal — rendered via portal so fixed pos is always viewport-relative ── */}
+      {modal && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(12px)' }}
+          onClick={() => { setModal(false); document.body.style.overflow = '' }}>
+          <div className="glass rounded-3xl p-8 w-full max-w-2xl overflow-y-auto"
+            style={{ maxHeight: 'calc(100dvh - 48px)' }}
             onClick={e => e.stopPropagation()}>
 
             {/* Header */}
@@ -242,7 +283,7 @@ export default function AdminProductsPage() {
               <h2 className="font-display font-black text-on-surface text-xl">
                 {editing ? 'Edit Product' : 'Add Product'}
               </h2>
-              <button onClick={() => setModal(false)} style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#8fafc7', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <button onClick={() => { setModal(false); document.body.style.overflow = '' }} style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#8fafc7', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Icon name="close" className="text-[18px]" />
               </button>
             </div>
@@ -263,8 +304,9 @@ export default function AdminProductsPage() {
                   }}
                   className="hover:border-primary/50"
                 >
-                  {form.image_url
-                    ? <Image src={form.image_url} alt="" width={72} height={72} style={{ borderRadius: 12, objectFit: 'contain', background: 'rgba(255,255,255,0.04)' }} />
+                  {(previewUrl || form.image_url)
+                    ? <img src={previewUrl || form.image_url} alt="preview"
+                        style={{ width: 72, height: 72, borderRadius: 12, objectFit: 'contain', background: 'rgba(255,255,255,0.04)' }} />
                     : <div style={{ width: 72, height: 72, borderRadius: 12, background: 'rgba(0,194,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <Icon name="image" className="text-[28px] text-on-surface-muted" />
                       </div>
@@ -274,7 +316,7 @@ export default function AdminProductsPage() {
                       {uploading ? 'Uploading…' : 'Click or drag to upload'}
                     </p>
                     <p className="text-xs text-on-surface-muted mt-0.5">JPEG, PNG, WebP · max 5 MB</p>
-                    {form.image_url && !uploading && (
+                    {(previewUrl || form.image_url) && !uploading && (
                       <p className="text-xs mt-1" style={{ color: '#00e5a0' }}>✓ Image set</p>
                     )}
                   </div>
@@ -321,6 +363,22 @@ export default function AdminProductsPage() {
                 </div>
               </div>
 
+              {/* ── Batch / Expiry ── */}
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-on-surface-muted mb-1">Batch Number</label>
+                  <input value={form.batch_number ?? ''} onChange={e => setForm(f => ({ ...f, batch_number: e.target.value }))} className="input-glass text-sm" placeholder="B2024001" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-on-surface-muted mb-1">Expiry Date</label>
+                  <input type="month" value={form.expiry_date ?? ''} onChange={e => setForm(f => ({ ...f, expiry_date: e.target.value }))} className="input-glass text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-on-surface-muted mb-1">Mfg. Date</label>
+                  <input type="month" value={form.manufactured_date ?? ''} onChange={e => setForm(f => ({ ...f, manufactured_date: e.target.value }))} className="input-glass text-sm" />
+                </div>
+              </div>
+
               {/* ── Variants ── */}
               <div style={{ borderTop: '1px solid rgba(0,194,255,0.1)', paddingTop: 20 }}>
                 <label className="block text-xs font-semibold mb-3 uppercase tracking-wide" style={{ color: '#a78bfa' }}>
@@ -349,7 +407,8 @@ export default function AdminProductsPage() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   )
