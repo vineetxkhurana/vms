@@ -11,7 +11,10 @@ import { SignJWT, jwtVerify } from 'jose'
 const TEST_SECRET = 'test-secret-key-for-vitest-only'
 const SECRET_BYTES = new TextEncoder().encode(TEST_SECRET)
 
-async function makeToken(payload: Record<string, unknown>, opts?: { secret?: Uint8Array; expiry?: string }) {
+async function makeToken(
+  payload: Record<string, unknown>,
+  opts?: { secret?: Uint8Array; expiry?: string },
+) {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
@@ -68,7 +71,13 @@ describe('OTP Brute-force Protection', () => {
   let otpRow: any
 
   beforeEach(() => {
-    otpRow = { id: 1, code: '123456', expires_at: Math.floor(Date.now() / 1000) + 600, used: 0, attempts: 0 }
+    otpRow = {
+      id: 1,
+      code: '123456',
+      expires_at: Math.floor(Date.now() / 1000) + 600,
+      used: 0,
+      attempts: 0,
+    }
     db = {
       prepare: vi.fn().mockReturnValue({
         bind: vi.fn().mockReturnValue({
@@ -124,10 +133,10 @@ describe('Input Validation', () => {
 
   it('phone validation rejects non-Indian numbers', async () => {
     const { isPhone } = await import('../../src/lib/otp')
-    expect(isPhone('9876543210')).toBe(true)   // valid
-    expect(isPhone('1234567890')).toBe(false)   // US-like
-    expect(isPhone('123456')).toBe(false)       // too short
-    expect(isPhone('98765432101')).toBe(false)  // too long
+    expect(isPhone('9876543210')).toBe(true) // valid
+    expect(isPhone('1234567890')).toBe(false) // US-like
+    expect(isPhone('123456')).toBe(false) // too short
+    expect(isPhone('98765432101')).toBe(false) // too long
   })
 
   it('phone normalization strips +91 prefix', async () => {
@@ -191,17 +200,17 @@ describe('Price Tier Resolution', () => {
 
   it('upgrades to retailer price at quantity threshold (6+)', async () => {
     const { resolvePrice } = await import('../../src/lib/auth')
-    expect(resolvePrice(10000, 9000, 7500, 'customer', 5)).toBe(10000)  // below threshold
-    expect(resolvePrice(10000, 9000, 7500, 'customer', 6)).toBe(9000)   // at threshold
-    expect(resolvePrice(10000, 9000, 7500, 'customer', 10)).toBe(9000)  // above threshold
-    expect(resolvePrice(10000, 9000, 7500, null, 6)).toBe(9000)     // no role, quantity kicks in
+    expect(resolvePrice(10000, 9000, 7500, 'customer', 5)).toBe(10000) // below threshold
+    expect(resolvePrice(10000, 9000, 7500, 'customer', 6)).toBe(9000) // at threshold
+    expect(resolvePrice(10000, 9000, 7500, 'customer', 10)).toBe(9000) // above threshold
+    expect(resolvePrice(10000, 9000, 7500, null, 6)).toBe(9000) // no role, quantity kicks in
   })
 
   it('upgrades to wholesaler price at quantity threshold (21+)', async () => {
     const { resolvePrice } = await import('../../src/lib/auth')
-    expect(resolvePrice(10000, 9000, 7500, 'customer', 20)).toBe(9000)  // still retailer
-    expect(resolvePrice(10000, 9000, 7500, 'customer', 21)).toBe(7500)  // wholesaler threshold
-    expect(resolvePrice(10000, 9000, 7500, null, 50)).toBe(7500)    // big order
+    expect(resolvePrice(10000, 9000, 7500, 'customer', 20)).toBe(9000) // still retailer
+    expect(resolvePrice(10000, 9000, 7500, 'customer', 21)).toBe(7500) // wholesaler threshold
+    expect(resolvePrice(10000, 9000, 7500, null, 50)).toBe(7500) // big order
   })
 
   it('falls back to base price if tier price is null', async () => {
@@ -244,9 +253,9 @@ describe('SQL Injection Prevention', () => {
       const content = fs.readFileSync(file, 'utf8')
       // Check for dangerous patterns: SQL with template literals containing variables
       // that aren't LIMIT/OFFSET (which are validated numerics)
-      const sqlLines = content.split('\n').filter(line =>
-        line.includes('.prepare(') && line.includes('${')
-      )
+      const sqlLines = content
+        .split('\n')
+        .filter(line => line.includes('.prepare(') && line.includes('${'))
 
       for (const line of sqlLines) {
         // Allow known-safe patterns: ${col} where col is from a whitelist, ${limit}, ${offset}
@@ -258,8 +267,8 @@ describe('SQL Injection Prevention', () => {
           if (!isSafe) {
             throw new Error(
               `Potential SQL injection in ${file}: ${interp} in SQL prepare()\n` +
-              `Line: ${line.trim()}\n` +
-              `If this is safe, add the variable to the safeVars whitelist in this test.`
+                `Line: ${line.trim()}\n` +
+                `If this is safe, add the variable to the safeVars whitelist in this test.`,
             )
           }
         }

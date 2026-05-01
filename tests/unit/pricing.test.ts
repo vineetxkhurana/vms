@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { calcTotals, DELIVERY_FREE_THRESHOLD_PAISE, DELIVERY_TIERS, RETAILER_QTY_THRESHOLD, WHOLESALER_QTY_THRESHOLD } from '@/lib/pricing'
+import {
+  calcTotals,
+  DELIVERY_FREE_THRESHOLD_PAISE,
+  DELIVERY_TIERS,
+  RETAILER_QTY_THRESHOLD,
+  WHOLESALER_QTY_THRESHOLD,
+} from '@/lib/pricing'
 
 describe('calcTotals', () => {
   it('applies correct tiered delivery for small orders', () => {

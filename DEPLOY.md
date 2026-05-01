@@ -1,6 +1,7 @@
 # VMS — Production Deployment Guide
 
 ## Stack
+
 - **Hosting**: Cloudflare Pages (free tier, global edge)
 - **Database**: Cloudflare D1 (SQLite at the edge, free tier)
 - **Storage**: Cloudflare R2 (images/assets, free 10 GB/month)
@@ -11,6 +12,7 @@
 ## First-time setup
 
 ### 1. Prerequisites
+
 ```bash
 npm install
 npm install -g wrangler
@@ -18,6 +20,7 @@ wrangler login          # opens browser → authorise with Cloudflare account
 ```
 
 ### 2. Create D1 database
+
 ```bash
 wrangler d1 create vms-db
 # Output includes database_id — paste it into wrangler.toml:
@@ -25,6 +28,7 @@ wrangler d1 create vms-db
 ```
 
 ### 3. Run migrations (creates all tables)
+
 ```bash
 # Production D1:
 npm run db:migrate
@@ -34,11 +38,13 @@ npm run db:migrate:local
 ```
 
 ### 4. Create R2 bucket (product images)
+
 ```bash
 wrangler r2 bucket create vms-assets
 ```
 
 ### 5. Set Cloudflare secrets
+
 ```bash
 # Generate a strong JWT secret:
 openssl rand -base64 32 | wrangler secret put JWT_SECRET
@@ -52,13 +58,16 @@ wrangler secret put RAZORPAY_WEBHOOK_SECRET
 ```
 
 ### 6. Set public env vars (non-sensitive)
+
 Edit `wrangler.toml` → `[vars]` section:
+
 ```toml
 NEXT_PUBLIC_RAZORPAY_KEY_ID = "rzp_live_xxxxxxxxxxxx"
 NEXT_PUBLIC_APP_URL = "https://your-domain.com"
 ```
 
 ### 7. Local .env.local (dev only)
+
 ```bash
 cp .env.example .env.local
 # Fill in your test keys from Razorpay dashboard
@@ -75,6 +84,7 @@ npm run deploy
 ```
 
 ### Custom domain (free with your own domain)
+
 1. Cloudflare Dashboard → Pages → vms-ecommerce → Custom domains
 2. Add your domain — DNS is configured automatically if managed by Cloudflare
 
@@ -97,6 +107,7 @@ Webhooks are the server-side confirmation of payment. They fire even if the cust
 ## Create first admin account
 
 ### Option A — via API (recommended)
+
 ```bash
 # 1. Register a user via the app at /register
 # 2. Promote to admin via D1:
@@ -105,6 +116,7 @@ wrangler d1 execute vms-db --command \
 ```
 
 ### Option B — direct insert
+
 ```bash
 # Password "Admin@123" hashed with bcrypt rounds=12
 # Generate your own: node -e "const b=require('bcryptjs'); b.hash('YourPass',12).then(console.log)"
@@ -118,6 +130,7 @@ wrangler d1 execute vms-db --command \
 ## Seeding products
 
 Export your local dev database to production:
+
 ```bash
 # 1. Dump local product data
 wrangler d1 export vms-db --local --output=local-backup.sql
@@ -153,12 +166,12 @@ npm run pages:dev        # Runs via wrangler — D1 bindings work exactly as in 
 
 ## Free tier limits (Cloudflare)
 
-| Resource | Free limit |
-|---|---|
+| Resource       | Free limit |
+| -------------- | ---------- |
 | Pages requests | 500K/month |
-| D1 reads | 5M/month |
-| D1 writes | 100K/month |
-| R2 storage | 10 GB |
-| R2 operations | 1M/month |
+| D1 reads       | 5M/month   |
+| D1 writes      | 100K/month |
+| R2 storage     | 10 GB      |
+| R2 operations  | 1M/month   |
 
 More than enough to run a pharmacy store at moderate volume.

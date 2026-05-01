@@ -26,15 +26,22 @@ function log(level: LogLevel, message: string, ctx?: LogContext) {
       sentryLogger[level](message, ctx)
     } else {
       // Fallback: add as breadcrumb so it appears in Sentry error context
-      Sentry.addBreadcrumb({ message, level: level as any, data: ctx, timestamp: Date.now() / 1000 })
+      Sentry.addBreadcrumb({
+        message,
+        level: level as any,
+        data: ctx,
+        timestamp: Date.now() / 1000,
+      })
     }
-  } catch { /* never block */ }
+  } catch {
+    /* never block */
+  }
 }
 
 export const logger = {
   debug: (msg: string, ctx?: LogContext) => log('debug', msg, ctx),
-  info:  (msg: string, ctx?: LogContext) => log('info',  msg, ctx),
-  warn:  (msg: string, ctx?: LogContext) => log('warn',  msg, ctx),
+  info: (msg: string, ctx?: LogContext) => log('info', msg, ctx),
+  warn: (msg: string, ctx?: LogContext) => log('warn', msg, ctx),
   error: (msg: string, ctx?: LogContext) => log('error', msg, ctx),
   fatal: (msg: string, ctx?: LogContext) => log('fatal', msg, ctx),
 }
@@ -46,29 +53,50 @@ export const logger = {
  * e.g. metrics.increment('cart.add', 1, { category: 'vitamins' })
  */
 export function increment(name: string, value = 1, tags?: Record<string, string>) {
-  try { (Sentry as any).metrics?.increment(name, value, { tags }) } catch { /* no-op */ }
+  try {
+    ;(Sentry as any).metrics?.increment(name, value, { tags })
+  } catch {
+    /* no-op */
+  }
 }
 
 /**
  * Record a distribution (e.g. response time in ms, price in paise).
  * Appears as a histogram in Sentry dashboards.
  */
-export function distribution(name: string, value: number, unit = 'millisecond', tags?: Record<string, string>) {
-  try { (Sentry as any).metrics?.distribution(name, value, { unit, tags }) } catch { /* no-op */ }
+export function distribution(
+  name: string,
+  value: number,
+  unit = 'millisecond',
+  tags?: Record<string, string>,
+) {
+  try {
+    ;(Sentry as any).metrics?.distribution(name, value, { unit, tags })
+  } catch {
+    /* no-op */
+  }
 }
 
 /**
  * Set a gauge (current value — e.g. active sessions, cart size).
  */
 export function gauge(name: string, value: number, tags?: Record<string, string>) {
-  try { (Sentry as any).metrics?.gauge(name, value, { tags }) } catch { /* no-op */ }
+  try {
+    ;(Sentry as any).metrics?.gauge(name, value, { tags })
+  } catch {
+    /* no-op */
+  }
 }
 
 /**
  * Count unique values (e.g. unique users viewing a product).
  */
 export function uniqueSet(name: string, value: string | number, tags?: Record<string, string>) {
-  try { (Sentry as any).metrics?.set(name, value, { tags }) } catch { /* no-op */ }
+  try {
+    ;(Sentry as any).metrics?.set(name, value, { tags })
+  } catch {
+    /* no-op */
+  }
 }
 
 // ─── Business Events ─────────────────────────────────────────────────────────
@@ -82,16 +110,16 @@ export function trackEvent(event: string, props?: Record<string, string | number
 
 // Named business events for type safety
 export const events = {
-  pageView:        (path: string)                  => trackEvent('page_view',        { path }),
-  search:          (query: string, results: number) => trackEvent('search',           { query, results }),
-  productView:     (id: number, name: string)       => trackEvent('product_view',     { id, name }),
-  cartAdd:         (id: number, name: string)        => trackEvent('cart_add',         { id, name }),
-  cartRemove:      (id: number)                      => trackEvent('cart_remove',      { id }),
-  checkoutStart:   ()                                => trackEvent('checkout_start'),
-  orderPlaced:     (orderId: number, total: number)  => trackEvent('order_placed',     { orderId, total }),
-  authLogin:       (method: string)                  => trackEvent('auth_login',       { method }),
-  authRegister:    ()                                => trackEvent('auth_register'),
-  b2bApply:        ()                                => trackEvent('b2b_apply'),
+  pageView: (path: string) => trackEvent('page_view', { path }),
+  search: (query: string, results: number) => trackEvent('search', { query, results }),
+  productView: (id: number, name: string) => trackEvent('product_view', { id, name }),
+  cartAdd: (id: number, name: string) => trackEvent('cart_add', { id, name }),
+  cartRemove: (id: number) => trackEvent('cart_remove', { id }),
+  checkoutStart: () => trackEvent('checkout_start'),
+  orderPlaced: (orderId: number, total: number) => trackEvent('order_placed', { orderId, total }),
+  authLogin: (method: string) => trackEvent('auth_login', { method }),
+  authRegister: () => trackEvent('auth_register'),
+  b2bApply: () => trackEvent('b2b_apply'),
 }
 
 // ─── API Route Wrapper ────────────────────────────────────────────────────────
@@ -121,7 +149,11 @@ export function withObservability<T extends Request>(
       const latency = Date.now() - start
       const status = response.status
 
-      distribution('api.latency', latency, 'millisecond', { operation: operationName, method, status: String(status) })
+      distribution('api.latency', latency, 'millisecond', {
+        operation: operationName,
+        method,
+        status: String(status),
+      })
       increment('api.requests', 1, { operation: operationName, method, status: String(status) })
       logger.info(`${method} ${path} → ${status}`, { latency, operation: operationName })
 
@@ -129,8 +161,14 @@ export function withObservability<T extends Request>(
     } catch (error) {
       const latency = Date.now() - start
       increment('api.errors', 1, { operation: operationName, method })
-      logger.error(`${method} ${path} → 500`, { latency, operation: operationName, error: String(error) })
-      await Sentry.captureException(error, { extra: { url: req.url, method, operation: operationName } })
+      logger.error(`${method} ${path} → 500`, {
+        latency,
+        operation: operationName,
+        error: String(error),
+      })
+      await Sentry.captureException(error, {
+        extra: { url: req.url, method, operation: operationName },
+      })
 
       return new Response(JSON.stringify({ error: 'Internal server error' }), {
         status: 500,
@@ -143,8 +181,12 @@ export function withObservability<T extends Request>(
 // ─── D1 Analytics (server-side event persistence) ────────────────────────────
 
 export type AnalyticsEventName =
-  | 'product_view' | 'add_to_cart' | 'checkout_started'
-  | 'order_placed' | 'user_registered' | 'login'
+  | 'product_view'
+  | 'add_to_cart'
+  | 'checkout_started'
+  | 'order_placed'
+  | 'user_registered'
+  | 'login'
 
 /** Persist an event to D1 analytics_events table. Fire-and-forget. */
 export async function trackD1Event(
@@ -155,16 +197,29 @@ export async function trackD1Event(
 ): Promise<void> {
   try {
     await db
-      .prepare('INSERT INTO analytics_events (event, session_id, user_id, metadata, country) VALUES (?,?,?,?,?)')
-      .bind(event, opts.sessionId ?? null, opts.userId ?? null, JSON.stringify(meta), opts.country ?? null)
+      .prepare(
+        'INSERT INTO analytics_events (event, session_id, user_id, metadata, country) VALUES (?,?,?,?,?)',
+      )
+      .bind(
+        event,
+        opts.sessionId ?? null,
+        opts.userId ?? null,
+        JSON.stringify(meta),
+        opts.country ?? null,
+      )
       .run()
-  } catch { /* never block */ }
+  } catch {
+    /* never block */
+  }
 }
 
 /** Extract country + anonymous session from Cloudflare request headers. */
-export function analyticsContext(req: Request): { country: string | null; sessionId: string | null } {
+export function analyticsContext(req: Request): {
+  country: string | null
+  sessionId: string | null
+} {
   return {
-    country:   req.headers.get('cf-ipcountry'),
+    country: req.headers.get('cf-ipcountry'),
     sessionId: req.headers.get('x-session-id'),
   }
 }

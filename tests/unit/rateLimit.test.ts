@@ -9,9 +9,9 @@ function makeDb(_initialCount = 0, _resetAt = 0): D1Database {
     prepare: (_sql: string) => ({
       bind: (...args: any[]) => ({
         first: async <T>(): Promise<T | null> => {
-          const key      = args[0] as string
-          const newCount = args[1] as number  // reset_at for INSERT
-          const now      = args[2] as number
+          const key = args[0] as string
+          const newCount = args[1] as number // reset_at for INSERT
+          const now = args[2] as number
 
           if (!rows[key] || rows[key].reset_at <= now) {
             rows[key] = { count: 1, reset_at: newCount }
@@ -53,7 +53,13 @@ describe('rateLimit', () => {
 
   it('returns true when DB throws (graceful degradation)', async () => {
     const badDb = {
-      prepare: () => ({ bind: () => ({ first: async () => { throw new Error('DB error') } }) }),
+      prepare: () => ({
+        bind: () => ({
+          first: async () => {
+            throw new Error('DB error')
+          },
+        }),
+      }),
     } as unknown as D1Database
 
     const result = await rateLimit(badDb, 'any', 5, 60)

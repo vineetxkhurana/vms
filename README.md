@@ -8,16 +8,16 @@ Online storefront for Vipan Medical Store — a pharmacy serving both retail and
 
 ## Stack
 
-| Layer | Tech |
-|-------|------|
-| Framework | Next.js 15 (App Router, Edge Runtime) |
-| Styling | Tailwind CSS 4 + Framer Motion |
-| Database | Cloudflare D1 (SQLite) |
-| Storage | Cloudflare R2 |
-| Auth | JWT (jose) + OTP + Google OAuth |
-| Payments | Razorpay |
-| Monitoring | Sentry |
-| Hosting | Cloudflare Pages |
+| Layer      | Tech                                  |
+| ---------- | ------------------------------------- |
+| Framework  | Next.js 15 (App Router, Edge Runtime) |
+| Styling    | Tailwind CSS 4 + Framer Motion        |
+| Database   | Cloudflare D1 (SQLite)                |
+| Storage    | Cloudflare R2                         |
+| Auth       | JWT (jose) + OTP + Google OAuth       |
+| Payments   | Razorpay                              |
+| Monitoring | Sentry                                |
+| Hosting    | Cloudflare Pages                      |
 
 ## Features
 

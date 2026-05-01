@@ -16,27 +16,36 @@ export async function GET(req: Request) {
   if (auth instanceof NextResponse) return auth
 
   const { searchParams } = new URL(req.url)
-  const role   = searchParams.get('role')
+  const role = searchParams.get('role')
   const search = searchParams.get('search')?.trim().slice(0, 100)
-  const page   = Math.max(1, Number(searchParams.get('page') ?? 1))
-  const limit  = 30
+  const page = Math.max(1, Number(searchParams.get('page') ?? 1))
+  const limit = 30
   const offset = (page - 1) * limit
 
   let sql = `SELECT id, email, phone, name, role, is_verified, created_at
              FROM users WHERE role NOT IN ('admin','staff')`
   const params: unknown[] = []
 
-  if (role)   { sql += ' AND role=?'; params.push(role) }
-  if (search) { sql += ' AND (name LIKE ? OR email LIKE ? OR phone LIKE ?)'; params.push(`%${search}%`, `%${search}%`, `%${search}%`) }
+  if (role) {
+    sql += ' AND role=?'
+    params.push(role)
+  }
+  if (search) {
+    sql += ' AND (name LIKE ? OR email LIKE ? OR phone LIKE ?)'
+    params.push(`%${search}%`, `%${search}%`, `%${search}%`)
+  }
 
   sql += ` ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`
 
-  const { results } = await db.prepare(sql).bind(...params).all()
+  const { results } = await db
+    .prepare(sql)
+    .bind(...params)
+    .all()
   return ok({ users: results, page })
 }
 
 const PatchSchema = z.object({
-  id:   z.number(),
+  id: z.number(),
   role: z.enum(['customer', 'retailer', 'wholesaler']),
 })
 

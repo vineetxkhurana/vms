@@ -6,7 +6,10 @@ export function SkeletonRows({ rows = 5, cols }: { rows?: number; cols: (number 
         <tr key={i} style={{ borderBottom: '1px solid rgba(0,194,255,0.06)' }}>
           {cols.map((w, j) => (
             <td key={j} className="px-4 py-4">
-              <div className="skeleton rounded-lg" style={{ height: 18, width: w === 'auto' ? '100%' : w }} />
+              <div
+                className="skeleton rounded-lg"
+                style={{ height: 18, width: w === 'auto' ? '100%' : w }}
+              />
             </td>
           ))}
         </tr>
@@ -27,9 +30,23 @@ export function SkeletonList({ count = 3, height = 100 }: { count?: number; heig
 }
 
 /** Skeleton product grid cards. */
-export function SkeletonGrid({ count = 8, height = 280, minColWidth = 220 }: { count?: number; height?: number; minColWidth?: number }) {
+export function SkeletonGrid({
+  count = 8,
+  height = 280,
+  minColWidth = 220,
+}: {
+  count?: number
+  height?: number
+  minColWidth?: number
+}) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fill, minmax(${minColWidth}px, 1fr))`, gap: 20 }}>
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: `repeat(auto-fill, minmax(${minColWidth}px, 1fr))`,
+        gap: 20,
+      }}
+    >
       {Array.from({ length: count }).map((_, i) => (
         <div key={i} className="skeleton rounded-2xl" style={{ height }} />
       ))}

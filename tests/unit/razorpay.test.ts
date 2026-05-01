@@ -3,17 +3,22 @@ import { verifyPaymentSignature } from '@/lib/razorpay'
 
 // Razorpay payment verification: HMAC-SHA256(orderId|paymentId, secret) must match signature
 describe('verifyPaymentSignature', () => {
-  const secret    = 'test_webhook_secret_abc123'
-  const orderId   = 'order_TEST123'
+  const secret = 'test_webhook_secret_abc123'
+  const orderId = 'order_TEST123'
   const paymentId = 'pay_TEST456'
 
   async function makeSignature(body: string, key: string): Promise<string> {
     const cryptoKey = await crypto.subtle.importKey(
-      'raw', new TextEncoder().encode(key),
-      { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'],
+      'raw',
+      new TextEncoder().encode(key),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign'],
     )
     const sig = await crypto.subtle.sign('HMAC', cryptoKey, new TextEncoder().encode(body))
-    return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('')
+    return Array.from(new Uint8Array(sig))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('')
   }
 
   // verifyPaymentSignature reads RAZORPAY_KEY_SECRET from env — stub it for each test
@@ -28,7 +33,7 @@ describe('verifyPaymentSignature', () => {
   it('returns false for a tampered signature', async () => {
     stubEnv()
     const signature = await makeSignature(`${orderId}|${paymentId}`, secret)
-    const tampered  = signature.slice(0, -2) + '00'
+    const tampered = signature.slice(0, -2) + '00'
     expect(await verifyPaymentSignature(orderId, paymentId, tampered)).toBe(false)
   })
 

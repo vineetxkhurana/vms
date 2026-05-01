@@ -14,9 +14,7 @@ Sentry.init({
   // Application Metrics
   _experiments: { enableLogs: true },
 
-  integrations: [
-    Sentry.browserTracingIntegration(),
-  ],
+  integrations: [Sentry.browserTracingIntegration()],
 
   beforeSend(event) {
     // Strip IP addresses

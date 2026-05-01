@@ -12,15 +12,18 @@ import { z } from 'zod'
 export const runtime = 'edge'
 
 const RowSchema = z.object({
-  name:             z.string().min(1).max(300),
-  sku:              z.string().max(100).optional(),
-  batch_number:     z.string().max(100).optional(),
-  expiry_date:      z.string().regex(/^\d{4}-\d{2}$/).optional(),
-  stock:            z.number().int().min(0),
-  price:            z.number().positive(),           // rupees
-  price_retailer:   z.number().positive().optional(),
+  name: z.string().min(1).max(300),
+  sku: z.string().max(100).optional(),
+  batch_number: z.string().max(100).optional(),
+  expiry_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}$/)
+    .optional(),
+  stock: z.number().int().min(0),
+  price: z.number().positive(), // rupees
+  price_retailer: z.number().positive().optional(),
   price_wholesaler: z.number().positive().optional(),
-  brand:            z.enum(['VMS', 'other']).default('other'),
+  brand: z.enum(['VMS', 'other']).default('other'),
 })
 
 const BodySchema = z.object({
@@ -44,9 +47,9 @@ export async function POST(req: Request) {
   for (const row of rows) {
     try {
       // Prices are in rupees — convert to paise
-      const pricePaise            = Math.round(row.price * 100)
-      const retailerPaise         = row.price_retailer ? Math.round(row.price_retailer * 100) : null
-      const wholesalerPaise       = row.price_wholesaler ? Math.round(row.price_wholesaler * 100) : null
+      const pricePaise = Math.round(row.price * 100)
+      const retailerPaise = row.price_retailer ? Math.round(row.price_retailer * 100) : null
+      const wholesalerPaise = row.price_wholesaler ? Math.round(row.price_wholesaler * 100) : null
 
       // Check if product already exists by name (case-insensitive)
       const existing = await db
@@ -57,23 +60,42 @@ export async function POST(req: Request) {
       if (existing) {
         // Update stock, price, and batch info
         await db
-          .prepare(`UPDATE products SET
+          .prepare(
+            `UPDATE products SET
             stock = ?, price = ?,
             price_retailer = ?, price_wholesaler = ?,
             batch_number = ?, expiry_date = ?,
             brand = ?
-            WHERE id = ?`)
-          .bind(row.stock, pricePaise, retailerPaise, wholesalerPaise,
-                row.batch_number ?? null, row.expiry_date ?? null,
-                row.brand, existing.id)
+            WHERE id = ?`,
+          )
+          .bind(
+            row.stock,
+            pricePaise,
+            retailerPaise,
+            wholesalerPaise,
+            row.batch_number ?? null,
+            row.expiry_date ?? null,
+            row.brand,
+            existing.id,
+          )
           .run()
       } else {
         await db
-          .prepare(`INSERT INTO products
+          .prepare(
+            `INSERT INTO products
             (name, price, price_retailer, price_wholesaler, stock, brand, batch_number, expiry_date, is_active)
-            VALUES (?,?,?,?,?,?,?,?,1)`)
-          .bind(row.name, pricePaise, retailerPaise, wholesalerPaise,
-                row.stock, row.brand, row.batch_number ?? null, row.expiry_date ?? null)
+            VALUES (?,?,?,?,?,?,?,?,1)`,
+          )
+          .bind(
+            row.name,
+            pricePaise,
+            retailerPaise,
+            wholesalerPaise,
+            row.stock,
+            row.brand,
+            row.batch_number ?? null,
+            row.expiry_date ?? null,
+          )
           .run()
       }
       imported++

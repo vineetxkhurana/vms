@@ -6,11 +6,15 @@ import { Toaster } from 'react-hot-toast'
 import { ObservabilityProvider } from '@/components/ui/ObservabilityProvider'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
-const manrope = Manrope({ subsets: ['latin'], variable: '--font-manrope', weight: ['400','600','700','800'] })
+const manrope = Manrope({
+  subsets: ['latin'],
+  variable: '--font-manrope',
+  weight: ['400', '600', '700', '800'],
+})
 
 export const metadata: Metadata = {
   title: 'VMS · Vipan Medical Store',
-  description: 'India\'s trusted pharmacy platform for wholesalers, retailers and customers.',
+  description: "India's trusted pharmacy platform for wholesalers, retailers and customers.",
   icons: {
     icon: '/vms-icon.svg',
     shortcut: '/vms-icon.svg',
@@ -41,13 +45,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         )}
       </head>
       <body>
-        <ObservabilityProvider>
-          {children}
-        </ObservabilityProvider>
+        <ObservabilityProvider>{children}</ObservabilityProvider>
         <Toaster
           position="top-right"
           toastOptions={{
-            style: { background: '#0c1629', color: '#e8f4fd', border: '1px solid rgba(0,194,255,0.2)' }
+            style: {
+              background: '#0c1629',
+              color: '#e8f4fd',
+              border: '1px solid rgba(0,194,255,0.2)',
+            },
           }}
         />
       </body>

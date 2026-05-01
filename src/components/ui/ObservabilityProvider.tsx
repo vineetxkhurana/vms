@@ -19,40 +19,53 @@ function WebVitalsReporter() {
     // Use PerformanceObserver to capture Core Web Vitals
     const reportVital = (name: string, value: number) => {
       distribution('web_vitals', value, 'millisecond', { metric: name })
-      Sentry.addBreadcrumb({ category: 'web-vitals', message: name, data: { value }, level: 'info' })
+      Sentry.addBreadcrumb({
+        category: 'web-vitals',
+        message: name,
+        data: { value },
+        level: 'info',
+      })
     }
 
     // LCP
     try {
-      new PerformanceObserver((list) => {
+      new PerformanceObserver(list => {
         const entries = list.getEntries()
         const last = entries[entries.length - 1] as any
         reportVital('LCP', last.renderTime || last.loadTime)
       }).observe({ type: 'largest-contentful-paint', buffered: true })
-    } catch { /* unsupported browser */ }
+    } catch {
+      /* unsupported browser */
+    }
 
     // FID / INP
     try {
-      new PerformanceObserver((list) => {
+      new PerformanceObserver(list => {
         for (const entry of list.getEntries() as any[]) {
           reportVital('FID', entry.processingStart - entry.startTime)
         }
       }).observe({ type: 'first-input', buffered: true })
-    } catch { /* unsupported browser */ }
+    } catch {
+      /* unsupported browser */
+    }
 
     // CLS
     let clsValue = 0
     try {
-      new PerformanceObserver((list) => {
+      new PerformanceObserver(list => {
         for (const entry of list.getEntries() as any[]) {
           if (!(entry as any).hadRecentInput) clsValue += (entry as any).value
         }
         reportVital('CLS', clsValue * 1000) // scale to ms-equivalent for Sentry
       }).observe({ type: 'layout-shift', buffered: true })
-    } catch { /* unsupported browser */ }
+    } catch {
+      /* unsupported browser */
+    }
 
     // TTFB via navigation timing
-    const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined
+    const nav = performance.getEntriesByType('navigation')[0] as
+      | PerformanceNavigationTiming
+      | undefined
     if (nav) reportVital('TTFB', nav.responseStart - nav.requestStart)
   }, [])
 
@@ -76,29 +89,54 @@ class ErrorBoundary extends Component<{ children: ReactNode }, EBState> {
   render() {
     if (this.state.error) {
       return (
-        <div style={{
-          minHeight: '100vh', display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center',
-          background: '#050d1a', color: '#e8f4fd', fontFamily: 'system-ui',
-          gap: 16, padding: 32, textAlign: 'center',
-        }}>
+        <div
+          style={{
+            minHeight: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: '#050d1a',
+            color: '#e8f4fd',
+            fontFamily: 'system-ui',
+            gap: 16,
+            padding: 32,
+            textAlign: 'center',
+          }}
+        >
           <span style={{ fontSize: 48 }}>⚠️</span>
           <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>Something went wrong</h1>
           <p style={{ color: '#8fafc7', maxWidth: 400, margin: 0 }}>
             We&apos;ve been notified and are looking into it. Please refresh the page.
           </p>
           <button
-            onClick={() => { this.setState({ error: null }); window.location.reload() }}
+            onClick={() => {
+              this.setState({ error: null })
+              window.location.reload()
+            }}
             style={{
-              padding: '10px 24px', borderRadius: 10, border: 'none', cursor: 'pointer',
-              background: 'linear-gradient(135deg,#00c2ff,#7c3aed)', color: '#fff',
-              fontWeight: 700, fontSize: 14,
+              padding: '10px 24px',
+              borderRadius: 10,
+              border: 'none',
+              cursor: 'pointer',
+              background: 'linear-gradient(135deg,#00c2ff,#7c3aed)',
+              color: '#fff',
+              fontWeight: 700,
+              fontSize: 14,
             }}
           >
             Refresh page
           </button>
           {process.env.NODE_ENV === 'development' && (
-            <pre style={{ color: '#ef4444', fontSize: 12, textAlign: 'left', maxWidth: '80vw', overflow: 'auto' }}>
+            <pre
+              style={{
+                color: '#ef4444',
+                fontSize: 12,
+                textAlign: 'left',
+                maxWidth: '80vw',
+                overflow: 'auto',
+              }}
+            >
               {this.state.error.stack}
             </pre>
           )}

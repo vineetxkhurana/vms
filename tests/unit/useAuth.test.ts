@@ -5,10 +5,16 @@ import { renderHook, act } from '@testing-library/react'
 const localStorageMock = (() => {
   let store: Record<string, string> = {}
   return {
-    getItem:  (k: string) => store[k] ?? null,
-    setItem:  (k: string, v: string) => { store[k] = v },
-    removeItem: (k: string) => { delete store[k] },
-    clear:    () => { store = {} },
+    getItem: (k: string) => store[k] ?? null,
+    setItem: (k: string, v: string) => {
+      store[k] = v
+    },
+    removeItem: (k: string) => {
+      delete store[k]
+    },
+    clear: () => {
+      store = {}
+    },
   }
 })()
 
@@ -34,7 +40,13 @@ describe('useAuth', () => {
   })
 
   it('returns user from localStorage when set', async () => {
-    const mockUser = { id: 1, name: 'Test User', email: 'test@vms.com', phone: null, role: 'customer' }
+    const mockUser = {
+      id: 1,
+      name: 'Test User',
+      email: 'test@vms.com',
+      phone: null,
+      role: 'customer',
+    }
     localStorageMock.setItem('vms_user', JSON.stringify(mockUser))
 
     const { result } = renderHook(() => useAuth())
@@ -66,7 +78,9 @@ describe('useAuth', () => {
     // Mock fetch for logout API call
     globalThis.fetch = vi.fn().mockResolvedValue(new Response('{}'))
 
-    await act(async () => { await result.current.signOut() })
+    await act(async () => {
+      await result.current.signOut()
+    })
 
     expect(localStorageMock.getItem('vms_token')).toBeNull()
     expect(localStorageMock.getItem('vms_user')).toBeNull()

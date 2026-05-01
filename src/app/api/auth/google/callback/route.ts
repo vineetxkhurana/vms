@@ -28,13 +28,15 @@ async function getCfEnv(): Promise<Record<string, string>> {
   try {
     const { getRequestContext } = await import('@cloudflare/next-on-pages')
     return (getRequestContext().env as any) ?? {}
-  } catch (_e) { /* not on Cloudflare */ }
+  } catch (_e) {
+    /* not on Cloudflare */
+  }
   return {}
 }
 
 export async function GET(req: Request) {
   const { searchParams, origin } = new URL(req.url)
-  const code  = searchParams.get('code')
+  const code = searchParams.get('code')
   const error = searchParams.get('error')
   const state = searchParams.get('state')
 
@@ -51,7 +53,7 @@ export async function GET(req: Request) {
   }
 
   const env = await getCfEnv()
-  const clientId     = env.GOOGLE_CLIENT_ID     ?? process.env.GOOGLE_CLIENT_ID
+  const clientId = env.GOOGLE_CLIENT_ID ?? process.env.GOOGLE_CLIENT_ID
   const clientSecret = env.GOOGLE_CLIENT_SECRET ?? process.env.GOOGLE_CLIENT_SECRET
   if (!clientId || !clientSecret) {
     return NextResponse.redirect(`${origin}/login?error=oauth_misconfigured`)
@@ -59,14 +61,14 @@ export async function GET(req: Request) {
 
   // Exchange code for tokens
   const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
-    method:  'POST',
+    method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
       code,
-      client_id:     clientId,
+      client_id: clientId,
       client_secret: clientSecret,
-      redirect_uri:  `${origin}/api/auth/google/callback`,
-      grant_type:    'authorization_code',
+      redirect_uri: `${origin}/api/auth/google/callback`,
+      grant_type: 'authorization_code',
     }),
   })
 
@@ -74,7 +76,7 @@ export async function GET(req: Request) {
     return NextResponse.redirect(`${origin}/login?error=google_token_failed`)
   }
 
-  const tokens = await tokenRes.json() as GoogleTokenResponse
+  const tokens = (await tokenRes.json()) as GoogleTokenResponse
 
   // Fetch user profile from Google
   const profileRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
@@ -85,7 +87,7 @@ export async function GET(req: Request) {
     return NextResponse.redirect(`${origin}/login?error=google_profile_failed`)
   }
 
-  const profile = await profileRes.json() as GoogleUserInfo
+  const profile = (await profileRes.json()) as GoogleUserInfo
 
   if (!profile.email_verified) {
     return NextResponse.redirect(`${origin}/login?error=google_email_unverified`)
@@ -98,9 +100,17 @@ export async function GET(req: Request) {
 
   // Find existing user by google_id OR email (link accounts)
   let user = await db
-    .prepare('SELECT id, email, phone, name, role FROM users WHERE google_id = ? OR email = ? LIMIT 1')
+    .prepare(
+      'SELECT id, email, phone, name, role FROM users WHERE google_id = ? OR email = ? LIMIT 1',
+    )
     .bind(profile.sub, profile.email)
-    .first<{ id: number; email: string | null; phone: string | null; name: string; role: UserRole }>()
+    .first<{
+      id: number
+      email: string | null
+      phone: string | null
+      name: string
+      role: UserRole
+    }>()
 
   if (!user) {
     user = await db
@@ -110,7 +120,13 @@ export async function GET(req: Request) {
          RETURNING id, email, phone, name, role`,
       )
       .bind(profile.email, profile.name, profile.sub)
-      .first<{ id: number; email: string | null; phone: string | null; name: string; role: UserRole }>()
+      .first<{
+        id: number
+        email: string | null
+        phone: string | null
+        name: string
+        role: UserRole
+      }>()
   } else {
     await db
       .prepare('UPDATE users SET google_id = ?, is_verified = 1 WHERE id = ?')
@@ -123,29 +139,35 @@ export async function GET(req: Request) {
   }
 
   const token = await signToken({
-    sub:   String(user.id),
+    sub: String(user.id),
     email: user.email ?? null,
     phone: user.phone ?? null,
-    role:  user.role,
-    name:  user.name,
+    role: user.role,
+    name: user.name,
   })
 
   const destination = ['admin', 'staff'].includes(user.role) ? '/admin' : '/'
   const res = NextResponse.redirect(`${origin}${destination}`)
   res.cookies.set('vms_token', token, {
-    path:     '/',
+    path: '/',
     httpOnly: true,
     sameSite: 'lax',
-    secure:   true,
-    maxAge:   60 * 60 * 24 * 7,
+    secure: true,
+    maxAge: 60 * 60 * 24 * 7,
   })
   res.cookies.set('vms_token_pub', token, {
-    path:     '/',
+    path: '/',
     httpOnly: false,
     sameSite: 'lax',
-    secure:   true,
-    maxAge:   60,
+    secure: true,
+    maxAge: 60,
   })
-  res.cookies.set('oauth_state', '', { path: '/', httpOnly: true, sameSite: 'lax', secure: true, maxAge: 0 })
+  res.cookies.set('oauth_state', '', {
+    path: '/',
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: true,
+    maxAge: 0,
+  })
   return res
 }

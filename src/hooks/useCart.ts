@@ -14,11 +14,16 @@ let _items: CartItem[] = []
 let _hydrated = false
 const _listeners = new Set<() => void>()
 
-function _notify() { _listeners.forEach(fn => fn()) }
+function _notify() {
+  _listeners.forEach(fn => fn())
+}
 
 function _persist() {
   if (typeof window === 'undefined') return
-  const lean: PersistedItem[] = _items.map(i => ({ product_id: i.product.id, quantity: i.quantity }))
+  const lean: PersistedItem[] = _items.map(i => ({
+    product_id: i.product.id,
+    quantity: i.quantity,
+  }))
   localStorage.setItem(KEY, JSON.stringify(lean))
 }
 
@@ -27,26 +32,33 @@ function addItem(product: Product, quantity = 1) {
   const existing = _items.find(i => i.product.id === product.id)
   if (existing) {
     _items = _items.map(i =>
-      i.product.id === product.id ? { ...i, quantity: i.quantity + quantity } : i
+      i.product.id === product.id ? { ...i, quantity: i.quantity + quantity } : i,
     )
   } else {
     _items = [..._items, { product, quantity }]
   }
-  _persist(); _notify()
+  _persist()
+  _notify()
 }
 
 function removeItem(productId: number) {
   _items = _items.filter(i => i.product.id !== productId)
-  _persist(); _notify()
+  _persist()
+  _notify()
 }
 
 function updateItem(productId: number, quantity: number) {
   if (quantity <= 0) return removeItem(productId)
-  _items = _items.map(i => i.product.id === productId ? { ...i, quantity } : i)
-  _persist(); _notify()
+  _items = _items.map(i => (i.product.id === productId ? { ...i, quantity } : i))
+  _persist()
+  _notify()
 }
 
-function clearCart() { _items = []; _persist(); _notify() }
+function clearCart() {
+  _items = []
+  _persist()
+  _notify()
+}
 
 // ── Hook ─────────────────────────────────────────────────────────────────────
 export function useCart() {
@@ -66,7 +78,7 @@ export function useCart() {
         if (raw.length > 0) {
           const ids = raw.map(r => r.product_id).join(',')
           fetch(`/api/products?ids=${ids}`)
-            .then(r => r.ok ? r.json() : { products: [] })
+            .then(r => (r.ok ? r.json() : { products: [] }))
             .then((data: unknown) => {
               const products = (data as { products?: Product[] }).products ?? []
               const productMap = new Map(products.map(p => [p.id, p]))
@@ -76,13 +88,19 @@ export function useCart() {
                 .map(r => ({ product: productMap.get(r.product_id)!, quantity: r.quantity }))
               _notify()
             })
-            .catch(() => { /* network error — keep items empty */ })
+            .catch(() => {
+              /* network error — keep items empty */
+            })
         }
-      } catch { /* corrupt storage — start fresh */ }
+      } catch {
+        /* corrupt storage — start fresh */
+      }
     }
 
     handler()
-    return () => { _listeners.delete(handler) }
+    return () => {
+      _listeners.delete(handler)
+    }
   }, [])
 
   const total = _items.reduce((s, i) => s + i.product.price * i.quantity, 0)
@@ -101,5 +119,7 @@ export function useCart() {
 
 // ── Exposed for testing only ──────────────────────────────────────────────────
 export function _resetCartForTests() {
-  _items = []; _hydrated = false; _listeners.clear()
+  _items = []
+  _hydrated = false
+  _listeners.clear()
 }

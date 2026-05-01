@@ -8,11 +8,11 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 const securityHeaders = [
-  { key: 'X-DNS-Prefetch-Control',  value: 'on' },
-  { key: 'X-Frame-Options',         value: 'SAMEORIGIN' },
-  { key: 'X-Content-Type-Options',  value: 'nosniff' },
-  { key: 'Referrer-Policy',         value: 'strict-origin-when-cross-origin' },
-  { key: 'Permissions-Policy',      value: 'camera=(), microphone=(), geolocation=()' },
+  { key: 'X-DNS-Prefetch-Control', value: 'on' },
+  { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
   {
     key: 'Strict-Transport-Security',
     value: 'max-age=63072000; includeSubDomains; preload',
@@ -26,7 +26,7 @@ const securityHeaders = [
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: blob: https://*.r2.dev https://pub-*.r2.dev",
       "connect-src 'self' https://api.razorpay.com https://checkout.razorpay.com",
-      "frame-src https://api.razorpay.com https://checkout.razorpay.com",
+      'frame-src https://api.razorpay.com https://checkout.razorpay.com',
     ].join('; '),
   },
 ]
@@ -52,11 +52,19 @@ const nextConfig: NextConfig = {
     config.resolve.fallback = { ...config.resolve.fallback, crypto: false }
     // Treat native-module chain as externals so edge bundles don't try to inline them
     const nativeExternals = ['better-sqlite3', 'bindings', 'file-uri-to-path']
-    const existing = Array.isArray(config.externals) ? config.externals : config.externals ? [config.externals] : []
+    const existing = Array.isArray(config.externals)
+      ? config.externals
+      : config.externals
+        ? [config.externals]
+        : []
     config.externals = [
       ...existing,
-      ({ request }: { request?: string }, callback: (err?: Error | null, result?: string) => void) => {
-        if (request && nativeExternals.includes(request)) return callback(null, `commonjs ${request}`)
+      (
+        { request }: { request?: string },
+        callback: (err?: Error | null, result?: string) => void,
+      ) => {
+        if (request && nativeExternals.includes(request))
+          return callback(null, `commonjs ${request}`)
         callback()
       },
     ]
@@ -80,4 +88,3 @@ export default withSentryConfig(nextConfig, {
   autoInstrumentMiddleware: true,
   autoInstrumentAppDirectory: true,
 })
-

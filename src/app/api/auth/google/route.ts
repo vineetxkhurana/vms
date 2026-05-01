@@ -8,7 +8,9 @@ async function getCfEnv(): Promise<Record<string, string>> {
   try {
     const { getRequestContext } = await import('@cloudflare/next-on-pages')
     return (getRequestContext().env as any) ?? {}
-  } catch (_e) { /* not on Cloudflare */ }
+  } catch (_e) {
+    /* not on Cloudflare */
+  }
   return {}
 }
 
@@ -28,17 +30,20 @@ export async function GET(req: Request) {
   const state = Array.from(stateBytes, b => b.toString(16).padStart(2, '0')).join('')
 
   const params = new URLSearchParams({
-    client_id:     clientId,
-    redirect_uri:  redirectUri,
+    client_id: clientId,
+    redirect_uri: redirectUri,
     response_type: 'code',
-    scope:         'openid email profile',
-    access_type:   'online',
-    prompt:        'select_account',
+    scope: 'openid email profile',
+    access_type: 'online',
+    prompt: 'select_account',
     state,
   })
 
   const res = Response.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params}`)
   const headers = new Headers(res.headers)
-  headers.append('Set-Cookie', `oauth_state=${state}; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=600`)
+  headers.append(
+    'Set-Cookie',
+    `oauth_state=${state}; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=600`,
+  )
   return new Response(res.body, { status: res.status, headers })
 }

@@ -76,7 +76,6 @@ export default function TrustPage() {
       style={{ paddingTop: 'var(--page-pt)', paddingBottom: 'var(--page-pb)' }}
     >
       <div className="max-w-5xl mx-auto">
-
         {/* ── HERO ─────────────────────────────────────────── */}
         <div className="mb-16 text-center">
           <div
@@ -90,7 +89,10 @@ export default function TrustPage() {
             title="Licensed & Trusted Pharmacy"
             className="mb-4"
           />
-          <p className="text-on-surface-muted max-w-2xl mx-auto leading-relaxed" style={{ fontFamily: 'Inter, sans-serif', fontSize: 16 }}>
+          <p
+            className="text-on-surface-muted max-w-2xl mx-auto leading-relaxed"
+            style={{ fontFamily: 'Inter, sans-serif', fontSize: 16 }}
+          >
             Vipan Medical Store is a fully licensed pharmacy operating since 1999. All our medicines
             are sourced directly from authorized distributors and manufacturers — never from
             unverified or grey-market channels.
@@ -100,10 +102,27 @@ export default function TrustPage() {
         {/* ── CERTIFICATIONS GRID ──────────────────────────── */}
         <section className="mb-16">
           <div className="mb-8">
-            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 3, color: '#00c2ff', textTransform: 'uppercase', fontFamily: 'Inter, sans-serif' }}>
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: 3,
+                color: '#00c2ff',
+                textTransform: 'uppercase',
+                fontFamily: 'Inter, sans-serif',
+              }}
+            >
               Our Credentials
             </span>
-            <h2 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, fontSize: 'clamp(22px, 3vw, 32px)', color: '#e8f4fd', marginTop: 6 }}>
+            <h2
+              style={{
+                fontFamily: 'Manrope, sans-serif',
+                fontWeight: 800,
+                fontSize: 'clamp(22px, 3vw, 32px)',
+                color: '#e8f4fd',
+                marginTop: 6,
+              }}
+            >
               Certifications &amp; Licenses
             </h2>
           </div>
@@ -111,11 +130,21 @@ export default function TrustPage() {
           {/* Admin note */}
           <div
             className="mb-8 flex items-start gap-3 rounded-xl p-4"
-            style={{ background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.2)' }}
+            style={{
+              background: 'rgba(124,58,237,0.08)',
+              border: '1px solid rgba(124,58,237,0.2)',
+            }}
           >
-            <Icon name="info" fill className="text-[18px] flex-shrink-0 mt-0.5" style={{ color: '#a78bfa' }} />
+            <Icon
+              name="info"
+              fill
+              className="text-[18px] flex-shrink-0 mt-0.5"
+              style={{ color: '#a78bfa' }}
+            />
             <p className="text-sm" style={{ color: '#a78bfa', fontFamily: 'Inter, sans-serif' }}>
-              <strong>Admin note:</strong> Replace the placeholder numbers in brackets with your actual license numbers. You can also upload scanned certificate images alongside each card.
+              <strong>Admin note:</strong> Replace the placeholder numbers in brackets with your
+              actual license numbers. You can also upload scanned certificate images alongside each
+              card.
             </p>
           </div>
 
@@ -128,21 +157,32 @@ export default function TrustPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div
                     className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ background: 'rgba(0,194,255,0.08)', border: '1px solid rgba(0,194,255,0.18)' }}
+                    style={{
+                      background: 'rgba(0,194,255,0.08)',
+                      border: '1px solid rgba(0,194,255,0.18)',
+                    }}
                   >
                     <Icon name={cert.icon} fill className="text-primary text-[24px]" />
                   </div>
                   {cert.optional ? (
                     <span
                       className="text-xs font-semibold px-2 py-1 rounded-full"
-                      style={{ background: 'rgba(124,58,237,0.15)', color: '#a78bfa', border: '1px solid rgba(124,58,237,0.25)' }}
+                      style={{
+                        background: 'rgba(124,58,237,0.15)',
+                        color: '#a78bfa',
+                        border: '1px solid rgba(124,58,237,0.25)',
+                      }}
                     >
                       Optional
                     </span>
                   ) : (
                     <span
                       className="text-xs font-semibold px-2 py-1 rounded-full flex items-center gap-1"
-                      style={{ background: 'rgba(0,229,160,0.12)', color: '#00e5a0', border: '1px solid rgba(0,229,160,0.25)' }}
+                      style={{
+                        background: 'rgba(0,229,160,0.12)',
+                        color: '#00e5a0',
+                        border: '1px solid rgba(0,229,160,0.25)',
+                      }}
                     >
                       <Icon name="check_circle" fill className="text-[12px]" />
                       Valid &amp; Active
@@ -150,8 +190,12 @@ export default function TrustPage() {
                   )}
                 </div>
                 <div>
-                  <h3 className="font-display font-bold text-on-surface text-base mb-1">{cert.name}</h3>
-                  <p className="text-sm font-mono mb-2" style={{ color: '#00c2ff' }}>{cert.number}</p>
+                  <h3 className="font-display font-bold text-on-surface text-base mb-1">
+                    {cert.name}
+                  </h3>
+                  <p className="text-sm font-mono mb-2" style={{ color: '#00c2ff' }}>
+                    {cert.number}
+                  </p>
                   <p className="text-xs text-on-surface-muted">{cert.note}</p>
                 </div>
               </div>
@@ -162,10 +206,27 @@ export default function TrustPage() {
         {/* ── WHY BUY FROM US ──────────────────────────────── */}
         <section className="mb-16">
           <div className="mb-8">
-            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 3, color: '#00c2ff', textTransform: 'uppercase', fontFamily: 'Inter, sans-serif' }}>
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: 3,
+                color: '#00c2ff',
+                textTransform: 'uppercase',
+                fontFamily: 'Inter, sans-serif',
+              }}
+            >
               Why Us
             </span>
-            <h2 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, fontSize: 'clamp(22px, 3vw, 32px)', color: '#e8f4fd', marginTop: 6 }}>
+            <h2
+              style={{
+                fontFamily: 'Manrope, sans-serif',
+                fontWeight: 800,
+                fontSize: 'clamp(22px, 3vw, 32px)',
+                color: '#e8f4fd',
+                marginTop: 6,
+              }}
+            >
               Why Buy From Us
             </h2>
           </div>
@@ -199,7 +260,10 @@ export default function TrustPage() {
           >
             <div
               className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: 'rgba(0,229,160,0.08)', border: '1px solid rgba(0,229,160,0.22)' }}
+              style={{
+                background: 'rgba(0,229,160,0.08)',
+                border: '1px solid rgba(0,229,160,0.22)',
+              }}
             >
               <Icon name="science" fill className="text-[28px]" style={{ color: '#00e5a0' }} />
             </div>
@@ -207,10 +271,13 @@ export default function TrustPage() {
               <h3 className="font-display font-bold text-on-surface text-lg mb-3">
                 Source &amp; Quality Assurance
               </h3>
-              <p className="text-on-surface-muted leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>
+              <p
+                className="text-on-surface-muted leading-relaxed"
+                style={{ fontFamily: 'Inter, sans-serif' }}
+              >
                 All medicines are procured from authorized stockists and carry manufacturer batch
-                numbers and expiry tracking. We never stock expired or near-expired medicines.
-                Each product is verified against the manufacturer&apos;s catalogue before shelving,
+                numbers and expiry tracking. We never stock expired or near-expired medicines. Each
+                product is verified against the manufacturer&apos;s catalogue before shelving,
                 ensuring you always receive genuine, full-potency medication.
               </p>
             </div>
@@ -220,10 +287,27 @@ export default function TrustPage() {
         {/* ── CONTACT / VERIFY ─────────────────────────────── */}
         <section>
           <div className="mb-8">
-            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 3, color: '#00c2ff', textTransform: 'uppercase', fontFamily: 'Inter, sans-serif' }}>
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: 3,
+                color: '#00c2ff',
+                textTransform: 'uppercase',
+                fontFamily: 'Inter, sans-serif',
+              }}
+            >
               Visit Us
             </span>
-            <h2 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, fontSize: 'clamp(22px, 3vw, 32px)', color: '#e8f4fd', marginTop: 6 }}>
+            <h2
+              style={{
+                fontFamily: 'Manrope, sans-serif',
+                fontWeight: 800,
+                fontSize: 'clamp(22px, 3vw, 32px)',
+                color: '#e8f4fd',
+                marginTop: 6,
+              }}
+            >
               Verify In Person
             </h2>
           </div>
@@ -233,8 +317,10 @@ export default function TrustPage() {
               <Icon name="location_on" fill className="text-primary text-[28px]" />
               <h4 className="font-display font-bold text-on-surface">Our Address</h4>
               <p className="text-sm text-on-surface-muted leading-relaxed">
-                Vipan Medical Store<br />
-                [Shop Address, Street]<br />
+                Vipan Medical Store
+                <br />
+                [Shop Address, Street]
+                <br />
                 Amritsar, Punjab, India
               </p>
               <p className="text-xs text-on-surface-muted">
@@ -252,9 +338,7 @@ export default function TrustPage() {
               >
                 +91-9XXXXXXXXX
               </a>
-              <p className="text-xs text-on-surface-muted">
-                Available Mon–Sat, 9 AM – 8 PM
-              </p>
+              <p className="text-xs text-on-surface-muted">Available Mon–Sat, 9 AM – 8 PM</p>
             </div>
 
             <div className="glass rounded-2xl p-6 flex flex-col gap-3">
@@ -275,7 +359,6 @@ export default function TrustPage() {
             </div>
           </div>
         </section>
-
       </div>
     </div>
   )

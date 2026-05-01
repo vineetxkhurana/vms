@@ -8,29 +8,58 @@ import { z } from 'zod'
 import { Icon } from '@/components/ui/Icon'
 
 const AddressSchema = z.object({
-  name:  z.string().min(1, 'Name required'),
+  name: z.string().min(1, 'Name required'),
   phone: z.string().regex(/^\d{10}$/, '10-digit phone required'),
   line1: z.string().min(1, 'Address required'),
   line2: z.string().optional(),
-  city:  z.string().min(1, 'City required'),
+  city: z.string().min(1, 'City required'),
   state: z.string().min(1, 'State required'),
-  pin:   z.string().regex(/^\d{6}$/, '6-digit PIN required'),
+  pin: z.string().regex(/^\d{6}$/, '6-digit PIN required'),
 })
 
-type SavedAddress = { id: number; label: string; name: string; phone: string; line1: string; line2?: string; city: string; state: string; pin: string; is_default: 0|1 }
+type SavedAddress = {
+  id: number
+  label: string
+  name: string
+  phone: string
+  line1: string
+  line2?: string
+  city: string
+  state: string
+  pin: string
+  is_default: 0 | 1
+}
 
-declare global { interface Window { Razorpay: any } }
+declare global {
+  interface Window {
+    Razorpay: any
+  }
+}
 
 const STEPS = ['Cart', 'Address', 'Payment', 'Confirmation']
 
-type ResolvedItem = { product_id: number; unit_price: number; mrp: number; line_total: number; was_discounted: boolean }
+type ResolvedItem = {
+  product_id: number
+  unit_price: number
+  mrp: number
+  line_total: number
+  was_discounted: boolean
+}
 type Preview = { items: ResolvedItem[]; subtotal: number; delivery: number; total: number } | null
 
 export default function CheckoutPage() {
   const { items, total: mrpSubtotal, clear } = useCart()
   const fallback = calcTotals(mrpSubtotal)
   const router = useRouter()
-  const [form, setForm] = useState({ name:'', phone:'', line1:'', line2:'', city:'', state:'', pin:'' })
+  const [form, setForm] = useState({
+    name: '',
+    phone: '',
+    line1: '',
+    line2: '',
+    city: '',
+    state: '',
+    pin: '',
+  })
   const [loading, setLoading] = useState(false)
   const [step] = useState(1)
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([])
@@ -38,7 +67,7 @@ export default function CheckoutPage() {
 
   const subtotal = preview?.subtotal ?? fallback.subtotal
   const delivery = preview?.delivery ?? fallback.delivery
-  const total    = preview?.total ?? fallback.total
+  const total = preview?.total ?? fallback.total
   const priceMap = new Map(preview?.items.map(i => [i.product_id, i]) ?? [])
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('vms_token') : null
@@ -52,32 +81,54 @@ export default function CheckoutPage() {
         'Content-Type': 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: JSON.stringify({ items: items.map(i => ({ product_id: i.product.id, quantity: i.quantity })) }),
+      body: JSON.stringify({
+        items: items.map(i => ({ product_id: i.product.id, quantity: i.quantity })),
+      }),
     })
-      .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data) setPreview(data as Preview) })
-      .catch(() => { /* use fallback */ })
+      .then(r => (r.ok ? r.json() : null))
+      .then(data => {
+        if (data) setPreview(data as Preview)
+      })
+      .catch(() => {
+        /* use fallback */
+      })
   }, [items, token])
 
   useEffect(() => {
     if (!token) return
     fetch('/api/addresses', { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.ok ? r.json() : { addresses: [] })
+      .then(r => (r.ok ? r.json() : { addresses: [] }))
       .then((d: any) => {
         const addrs: SavedAddress[] = d.addresses ?? []
         setSavedAddresses(addrs)
         const def = addrs.find(a => a.is_default) ?? addrs[0]
-        if (def) setForm({ name: def.name, phone: def.phone, line1: def.line1, line2: def.line2 ?? '', city: def.city, state: def.state, pin: def.pin })
+        if (def)
+          setForm({
+            name: def.name,
+            phone: def.phone,
+            line1: def.line1,
+            line2: def.line2 ?? '',
+            city: def.city,
+            state: def.state,
+            pin: def.pin,
+          })
       })
       .catch(() => {})
   }, [token])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!token) { toast.error('Please login first'); router.push('/login'); return }
+    if (!token) {
+      toast.error('Please login first')
+      router.push('/login')
+      return
+    }
 
     const parsed = AddressSchema.safeParse(form)
-    if (!parsed.success) { toast.error(parsed.error.issues[0].message); return }
+    if (!parsed.success) {
+      toast.error(parsed.error.issues[0].message)
+      return
+    }
 
     setLoading(true)
     try {
@@ -89,15 +140,24 @@ export default function CheckoutPage() {
           address: parsed.data,
         }),
       })
-      const orderData = await orderRes.json() as { error?: string; amount?: number; razorpay_order_id?: string; order_id?: number }
+      const orderData = (await orderRes.json()) as {
+        error?: string
+        amount?: number
+        razorpay_order_id?: string
+        order_id?: number
+      }
       if (!orderRes.ok) throw new Error(orderData.error)
 
       await new Promise<void>((resolve, reject) => {
-        if (window.Razorpay) { resolve(); return }
+        if (window.Razorpay) {
+          resolve()
+          return
+        }
         const s = document.createElement('script')
         s.src = 'https://checkout.razorpay.com/v1/checkout.js'
         s.onload = () => resolve()
-        s.onerror = () => reject(new Error('Failed to load payment gateway. Check your connection and try again.'))
+        s.onerror = () =>
+          reject(new Error('Failed to load payment gateway. Check your connection and try again.'))
         document.body.appendChild(s)
       })
 
@@ -125,9 +185,9 @@ export default function CheckoutPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({
-                  razorpay_order_id:   response.razorpay_order_id,
+                  razorpay_order_id: response.razorpay_order_id,
                   razorpay_payment_id: response.razorpay_payment_id,
-                  razorpay_signature:  response.razorpay_signature,
+                  razorpay_signature: response.razorpay_signature,
                 }),
               })
               if (verifyRes.ok) {
@@ -135,14 +195,27 @@ export default function CheckoutPage() {
                 router.push(`/orders?success=1&order=${orderData.order_id}`)
                 resolve()
               } else {
-                reject(new Error('Payment verification failed. Your payment may still be processing — check your orders in a few minutes or contact support.'))
+                reject(
+                  new Error(
+                    'Payment verification failed. Your payment may still be processing — check your orders in a few minutes or contact support.',
+                  ),
+                )
               }
             } catch {
-              reject(new Error('Network error during payment verification. Please check your orders page.'))
+              reject(
+                new Error(
+                  'Network error during payment verification. Please check your orders page.',
+                ),
+              )
             }
           },
           modal: {
-            ondismiss: () => reject(new Error('Payment cancelled. Your order is saved — you can retry from your orders page.')),
+            ondismiss: () =>
+              reject(
+                new Error(
+                  'Payment cancelled. Your order is saved — you can retry from your orders page.',
+                ),
+              ),
           },
         })
         rzp.open()
@@ -168,9 +241,11 @@ export default function CheckoutPage() {
   )
 
   return (
-    <div className="min-h-screen px-6 lg:px-20" style={{ paddingTop: 'var(--page-pt)', paddingBottom: 'var(--page-pb)' }}>
+    <div
+      className="min-h-screen px-6 lg:px-20"
+      style={{ paddingTop: 'var(--page-pt)', paddingBottom: 'var(--page-pb)' }}
+    >
       <div className="relative z-10 max-w-4xl mx-auto">
-
         {/* Progress steps */}
         <div className="flex items-center justify-center gap-2 mb-12">
           {STEPS.map((s, i) => (
@@ -178,16 +253,19 @@ export default function CheckoutPage() {
               <div
                 className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all"
                 style={{
-                  background: i === step
-                    ? 'linear-gradient(135deg, #00c2ff, #7c3aed)'
-                    : i < step
-                      ? 'rgba(0,229,160,0.15)'
-                      : 'rgba(10,20,45,0.6)',
+                  background:
+                    i === step
+                      ? 'linear-gradient(135deg, #00c2ff, #7c3aed)'
+                      : i < step
+                        ? 'rgba(0,229,160,0.15)'
+                        : 'rgba(10,20,45,0.6)',
                   color: i <= step ? '#e8f4fd' : '#8fafc7',
                   border: i === step ? 'none' : '1px solid rgba(0,194,255,0.15)',
                 }}
               >
-                {i < step && <Icon name="check_circle" fill className="text-[16px] text-secondary" />}
+                {i < step && (
+                  <Icon name="check_circle" fill className="text-[16px] text-secondary" />
+                )}
                 {s}
               </div>
               {i < STEPS.length - 1 && (
@@ -200,15 +278,16 @@ export default function CheckoutPage() {
           ))}
         </div>
 
-        <h1 className="font-display font-black text-on-surface mb-8" style={{ fontSize: 'clamp(24px, 3vw, 36px)' }}>
+        <h1
+          className="font-display font-black text-on-surface mb-8"
+          style={{ fontSize: 'clamp(24px, 3vw, 36px)' }}
+        >
           Delivery Details
         </h1>
 
         <form onSubmit={handleSubmit} className="grid md:grid-cols-5 gap-8">
-
           {/* Left: address + payment */}
           <div className="md:col-span-3 flex flex-col gap-6">
-
             {/* Address block */}
             <div className="glass rounded-2xl p-6">
               <h2 className="font-display font-bold text-on-surface text-lg mb-5 flex items-center gap-2">
@@ -218,15 +297,31 @@ export default function CheckoutPage() {
               <div className="flex flex-col gap-4">
                 {savedAddresses.length > 0 && (
                   <div className="mb-4">
-                    <p className="text-xs font-semibold text-on-surface-muted uppercase tracking-wider mb-2">Saved Addresses</p>
+                    <p className="text-xs font-semibold text-on-surface-muted uppercase tracking-wider mb-2">
+                      Saved Addresses
+                    </p>
                     <div className="flex flex-wrap gap-2">
                       {savedAddresses.map(a => (
                         <button
                           key={a.id}
                           type="button"
-                          onClick={() => setForm({ name: a.name, phone: a.phone, line1: a.line1, line2: a.line2 ?? '', city: a.city, state: a.state, pin: a.pin })}
+                          onClick={() =>
+                            setForm({
+                              name: a.name,
+                              phone: a.phone,
+                              line1: a.line1,
+                              line2: a.line2 ?? '',
+                              city: a.city,
+                              state: a.state,
+                              pin: a.pin,
+                            })
+                          }
                           className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-                          style={{ background: 'rgba(0,194,255,0.08)', border: '1px solid rgba(0,194,255,0.2)', color: '#8fafc7' }}
+                          style={{
+                            background: 'rgba(0,194,255,0.08)',
+                            border: '1px solid rgba(0,194,255,0.2)',
+                            color: '#8fafc7',
+                          }}
                         >
                           <span className="text-on-surface">{a.label}</span> · {a.city}
                         </button>
@@ -234,12 +329,12 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                 )}
-                {field('name',  'Full Name',     'Vipan Kumar')}
-                {field('phone', 'Phone Number',  '9876543210', 'tel')}
-                {field('line1', 'Address Line 1','House / Flat No, Street')}
+                {field('name', 'Full Name', 'Vipan Kumar')}
+                {field('phone', 'Phone Number', '9876543210', 'tel')}
+                {field('line1', 'Address Line 1', 'House / Flat No, Street')}
                 {field('line2', 'Address Line 2 (optional)', 'Landmark etc.')}
                 <div className="grid grid-cols-2 gap-3">
-                  {field('city',  'City',  'Amritsar')}
+                  {field('city', 'City', 'Amritsar')}
                   {field('state', 'State', 'Punjab')}
                 </div>
                 {field('pin', 'PIN Code', '143001')}
@@ -254,7 +349,10 @@ export default function CheckoutPage() {
               </h2>
               <div
                 className="flex items-center gap-4 p-4 rounded-xl"
-                style={{ background: 'rgba(0,194,255,0.05)', border: '1px solid rgba(0,194,255,0.15)' }}
+                style={{
+                  background: 'rgba(0,194,255,0.05)',
+                  border: '1px solid rgba(0,194,255,0.15)',
+                }}
               >
                 <Icon name="credit_card" fill className="text-primary text-[28px]" />
                 <div>
@@ -273,15 +371,24 @@ export default function CheckoutPage() {
                 {items.map(({ product, quantity }) => {
                   const resolved = priceMap.get(product.id)
                   const _unitPrice = resolved?.unit_price ?? product.price
-                  const lineTotal = resolved?.line_total ?? (product.price * quantity)
+                  const lineTotal = resolved?.line_total ?? product.price * quantity
                   const wasDiscounted = resolved?.was_discounted ?? false
                   return (
                     <div key={product.id} className="flex justify-between text-sm">
-                      <span className="text-on-surface-muted line-clamp-1 flex-1 mr-4">{product.name} × {quantity}</span>
+                      <span className="text-on-surface-muted line-clamp-1 flex-1 mr-4">
+                        {product.name} × {quantity}
+                      </span>
                       <div className="text-right">
-                        <span className="text-on-surface font-medium">₹{(lineTotal / 100).toFixed(2)}</span>
+                        <span className="text-on-surface font-medium">
+                          ₹{(lineTotal / 100).toFixed(2)}
+                        </span>
                         {wasDiscounted && (
-                          <span className="text-xs ml-2" style={{ color: '#5a7fa0', textDecoration: 'line-through' }}>₹{(product.price * quantity / 100).toFixed(2)}</span>
+                          <span
+                            className="text-xs ml-2"
+                            style={{ color: '#5a7fa0', textDecoration: 'line-through' }}
+                          >
+                            ₹{((product.price * quantity) / 100).toFixed(2)}
+                          </span>
                         )}
                       </div>
                     </div>
@@ -295,10 +402,16 @@ export default function CheckoutPage() {
                 <div className="flex justify-between text-sm text-on-surface-muted">
                   <div>
                     <p>Delivery</p>
-                    <p className="text-xs" style={{ color: '#5a7fa0' }}>Local delivery · 24–48 hrs</p>
+                    <p className="text-xs" style={{ color: '#5a7fa0' }}>
+                      Local delivery · 24–48 hrs
+                    </p>
                   </div>
                   <span className="text-on-surface font-semibold">
-                    {delivery === 0 ? <span className="text-secondary">Free</span> : `₹${(delivery / 100).toFixed(2)}`}
+                    {delivery === 0 ? (
+                      <span className="text-secondary">Free</span>
+                    ) : (
+                      `₹${(delivery / 100).toFixed(2)}`
+                    )}
                   </span>
                 </div>
                 {(() => {
@@ -319,12 +432,20 @@ export default function CheckoutPage() {
                 type="submit"
                 disabled={loading || items.length === 0}
                 className="cta-btn w-full py-4 rounded-full font-bold text-white flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ background: 'linear-gradient(135deg, #00c2ff, #7c3aed)', boxShadow: '0 16px 48px rgba(0,194,255,0.28)', border: 'none' }}
+                style={{
+                  background: 'linear-gradient(135deg, #00c2ff, #7c3aed)',
+                  boxShadow: '0 16px 48px rgba(0,194,255,0.28)',
+                  border: 'none',
+                }}
               >
                 {loading ? (
-                  <><Icon name="autorenew" className="animate-spin" /> Processing…</>
+                  <>
+                    <Icon name="autorenew" className="animate-spin" /> Processing…
+                  </>
                 ) : (
-                  <><Icon name="lock" className="text-[18px]" /> Pay ₹{(total / 100).toFixed(2)}</>
+                  <>
+                    <Icon name="lock" className="text-[18px]" /> Pay ₹{(total / 100).toFixed(2)}
+                  </>
                 )}
               </button>
               <p className="text-xs text-on-surface-muted text-center mt-3 flex items-center justify-center gap-1">

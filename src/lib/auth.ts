@@ -13,7 +13,7 @@ function secret() {
 }
 
 export type JWTPayload = {
-  sub: string            // user id
+  sub: string // user id
   email: string | null
   phone: string | null
   role: UserRole
@@ -44,8 +44,11 @@ export function tokenFromRequest(req: Request): string | null {
 export async function getUser(req: Request): Promise<JWTPayload | null> {
   const token = tokenFromRequest(req)
   if (!token) return null
-  try { return await verifyToken(token) }
-  catch { return null }
+  try {
+    return await verifyToken(token)
+  } catch {
+    return null
+  }
 }
 
 /** Returns user payload or a 401 NextResponse */
@@ -95,4 +98,3 @@ export function resolvePrice(
   if (isRetailer && retailerPrice != null) return retailerPrice
   return basePrice
 }
-

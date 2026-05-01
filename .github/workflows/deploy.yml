@@ -3,11 +3,11 @@ name: Deploy to Cloudflare Pages
 on:
   push:
     branches: [main]
-  workflow_dispatch:   # allow manual deploys from GitHub UI
+  workflow_dispatch: # allow manual deploys from GitHub UI
 
 concurrency:
   group: deploy-production
-  cancel-in-progress: false   # never cancel an in-progress deploy
+  cancel-in-progress: false # never cancel an in-progress deploy
 
 jobs:
   deploy:

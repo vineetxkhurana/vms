@@ -13,8 +13,11 @@ import { z } from 'zod'
 export const runtime = 'edge'
 
 const LoginSchema = z.object({
-  identifier: z.string().min(1).transform(s => s.trim().toLowerCase()),
-  password:   z.string().min(1),
+  identifier: z
+    .string()
+    .min(1)
+    .transform(s => s.trim().toLowerCase()),
+  password: z.string().min(1),
 })
 
 export async function POST(req: Request) {
@@ -35,21 +38,33 @@ export async function POST(req: Request) {
       'SELECT id, email, phone, name, password_hash, role FROM users WHERE email = ? OR phone = ? LIMIT 1',
     )
     .bind(identifier, identifier)
-    .first<{ id: number; email: string | null; phone: string | null; name: string; password_hash: string | null; role: UserRole }>()
+    .first<{
+      id: number
+      email: string | null
+      phone: string | null
+      name: string
+      password_hash: string | null
+      role: UserRole
+    }>()
 
   if (!user || !user.password_hash || !(await compare(password, user.password_hash)))
     return err('Invalid credentials', 401)
 
   const token = await signToken({
-    sub:   String(user.id),
+    sub: String(user.id),
     email: user.email ?? null,
     phone: user.phone ?? null,
-    role:  user.role,
-    name:  user.name,
+    role: user.role,
+    name: user.name,
   })
 
   const res = NextResponse.json({ token, user: { id: user.id, name: user.name, role: user.role } })
-  res.cookies.set('vms_token', token, { path: '/', httpOnly: true, sameSite: 'lax', secure: true, maxAge: 60 * 60 * 24 * 7 })
+  res.cookies.set('vms_token', token, {
+    path: '/',
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: true,
+    maxAge: 60 * 60 * 24 * 7,
+  })
   return res
 }
-

@@ -14,13 +14,13 @@ const PAGE_SIZE = 20
 
 // Category icon mapping
 const CAT_ICONS: Record<string, string> = {
-  'Medicines': 'medication',
+  Medicines: 'medication',
   'Vitamins & Supplements': 'nutrition',
   'Skin Care': 'spa',
   'Baby Care': 'child_care',
   'First Aid': 'medical_services',
   'Medical Devices': 'monitor_heart',
-  'Ayurvedic': 'eco',
+  Ayurvedic: 'eco',
   'Knee Support': 'accessibility_new',
   'Back & Abdominal Support': 'airline_seat_recline_normal',
   'Elbow & Arm Support': 'sports_martial_arts',
@@ -64,7 +64,7 @@ function ProductsContent() {
     if (catId) params.set('category', catId)
     try {
       const res = await fetch(`/api/products?${params}`)
-      const data = await res.json() as { products: Product[]; total?: number }
+      const data = (await res.json()) as { products: Product[]; total?: number }
       setProducts(data.products ?? [])
       setTotal(data.total ?? 0)
     } catch {
@@ -103,9 +103,17 @@ function ProductsContent() {
   }
 
   const pageButtonStyle = (active: boolean): React.CSSProperties => ({
-    width: 40, height: 40, borderRadius: 10, fontSize: 14, fontWeight: 600,
-    fontFamily: 'Inter, sans-serif', cursor: active ? 'default' : 'pointer',
-    display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none',
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    fontSize: 14,
+    fontWeight: 600,
+    fontFamily: 'Inter, sans-serif',
+    cursor: active ? 'default' : 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    border: 'none',
     background: active ? 'linear-gradient(135deg, #00c2ff, #7c3aed)' : 'rgba(10,20,45,0.7)',
     color: active ? '#fff' : '#8fafc7',
     outline: active ? 'none' : '1px solid rgba(0,194,255,0.15)',
@@ -113,15 +121,35 @@ function ProductsContent() {
   })
 
   return (
-    <div style={{ minHeight: '100vh', paddingTop: 'var(--page-pt)', paddingBottom: 'var(--page-pb)' }}>
-      <div style={{ position: 'relative', zIndex: 1, padding: '0 max(32px, 4vw)', maxWidth: 1400, margin: '0 auto' }}>
+    <div
+      style={{ minHeight: '100vh', paddingTop: 'var(--page-pt)', paddingBottom: 'var(--page-pb)' }}
+    >
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          padding: '0 max(32px, 4vw)',
+          maxWidth: 1400,
+          margin: '0 auto',
+        }}
+      >
         <div style={{ marginBottom: 40 }}>
           <PageHeader label="Catalogue" title="All Products" />
         </div>
 
         {/* Search */}
         <div style={{ position: 'relative', maxWidth: 480, marginBottom: 32 }}>
-          <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: '#8fafc7', display: 'flex', alignItems: 'center' }}>
+          <span
+            style={{
+              position: 'absolute',
+              left: 16,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: '#8fafc7',
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
             <Icon name="search" className="text-[20px]" />
           </span>
           <input
@@ -129,9 +157,15 @@ function ProductsContent() {
             onChange={e => handleSearchChange(e.target.value)}
             placeholder="Search products, brands..."
             style={{
-              width: '100%', padding: '14px 16px 14px 48px', borderRadius: 100,
-              background: 'rgba(10,20,45,0.8)', border: '1px solid rgba(0,194,255,0.2)',
-              color: '#e8f4fd', fontSize: 14, fontFamily: 'Inter, sans-serif', outline: 'none',
+              width: '100%',
+              padding: '14px 16px 14px 48px',
+              borderRadius: 100,
+              background: 'rgba(10,20,45,0.8)',
+              border: '1px solid rgba(0,194,255,0.2)',
+              color: '#e8f4fd',
+              fontSize: 14,
+              fontFamily: 'Inter, sans-serif',
+              outline: 'none',
             }}
           />
         </div>
@@ -141,9 +175,20 @@ function ProductsContent() {
           <button
             onClick={() => handleFilterChange(search, '')}
             style={{
-              padding: '7px 18px', borderRadius: 100, fontSize: 13, fontWeight: 600, cursor: 'pointer',
-              fontFamily: 'Inter, sans-serif', display: 'flex', alignItems: 'center', gap: 6, border: 'none',
-              background: categoryId === '' ? 'linear-gradient(135deg, #00c2ff, #7c3aed)' : 'rgba(10,20,45,0.7)',
+              padding: '7px 18px',
+              borderRadius: 100,
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'Inter, sans-serif',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              border: 'none',
+              background:
+                categoryId === ''
+                  ? 'linear-gradient(135deg, #00c2ff, #7c3aed)'
+                  : 'rgba(10,20,45,0.7)',
               color: categoryId === '' ? '#fff' : '#8fafc7',
               outline: categoryId === '' ? 'none' : '1px solid rgba(0,194,255,0.2)',
             }}
@@ -157,9 +202,19 @@ function ProductsContent() {
                 key={cat.id}
                 onClick={() => handleFilterChange(search, active ? '' : String(cat.id))}
                 style={{
-                  padding: '7px 18px', borderRadius: 100, fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                  fontFamily: 'Inter, sans-serif', display: 'flex', alignItems: 'center', gap: 6, border: 'none',
-                  background: active ? 'linear-gradient(135deg, #00c2ff, #7c3aed)' : 'rgba(10,20,45,0.7)',
+                  padding: '7px 18px',
+                  borderRadius: 100,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontFamily: 'Inter, sans-serif',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  border: 'none',
+                  background: active
+                    ? 'linear-gradient(135deg, #00c2ff, #7c3aed)'
+                    : 'rgba(10,20,45,0.7)',
                   color: active ? '#fff' : '#8fafc7',
                   outline: active ? 'none' : '1px solid rgba(0,194,255,0.2)',
                 }}
@@ -173,7 +228,14 @@ function ProductsContent() {
 
         {/* Product count & page info */}
         {!loading && (
-          <p style={{ fontSize: 13, color: '#8fafc7', marginBottom: 16, fontFamily: 'Inter, sans-serif' }}>
+          <p
+            style={{
+              fontSize: 13,
+              color: '#8fafc7',
+              marginBottom: 16,
+              fontFamily: 'Inter, sans-serif',
+            }}
+          >
             {total > 0
               ? `Showing ${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, total)} of ${total} products`
               : 'No products found'}
@@ -185,13 +247,29 @@ function ProductsContent() {
           <SkeletonGrid count={8} height={280} />
         ) : products.length > 0 ? (
           <>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 20 }}>
-              {products.map(p => <ProductCard key={p.id} product={p} />)}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+                gap: 20,
+              }}
+            >
+              {products.map(p => (
+                <ProductCard key={p.id} product={p} />
+              ))}
             </div>
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 48 }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  marginTop: 48,
+                }}
+              >
                 {/* Prev */}
                 <button
                   onClick={() => setPage(p => Math.max(1, p - 1))}
@@ -209,12 +287,17 @@ function ProductsContent() {
                 {/* Page numbers */}
                 {getPageNumbers().map((p, i) =>
                   p === 'ellipsis' ? (
-                    <span key={`e${i}`} style={{ color: '#8fafc7', fontSize: 14, padding: '0 4px' }}>…</span>
+                    <span
+                      key={`e${i}`}
+                      style={{ color: '#8fafc7', fontSize: 14, padding: '0 4px' }}
+                    >
+                      …
+                    </span>
                   ) : (
                     <button key={p} onClick={() => setPage(p)} style={pageButtonStyle(p === page)}>
                       {p}
                     </button>
-                  )
+                  ),
                 )}
 
                 {/* Next */}
@@ -246,5 +329,9 @@ function ProductsContent() {
 }
 
 export default function ProductsPage() {
-  return <Suspense><ProductsContent /></Suspense>
+  return (
+    <Suspense>
+      <ProductsContent />
+    </Suspense>
+  )
 }

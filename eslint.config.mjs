@@ -31,11 +31,14 @@ export default [
       parserOptions: { project: './tsconfig.json' },
     },
     rules: {
-      '@typescript-eslint/no-unused-vars': ['warn', {
-        argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_',
-        caughtErrorsIgnorePattern: '^_',
-      }],
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
       // D1 results are untyped — allow `any` project-wide, rely on tsc for type safety
       '@typescript-eslint/no-explicit-any': 'off',
       'import/no-duplicates': 'error',
@@ -52,6 +55,13 @@ export default [
     },
   },
   {
-    ignores: ['node_modules/**', '.next/**', '.vercel/**', '.wrangler/**', 'coverage/**', 'playwright-report/**'],
+    ignores: [
+      'node_modules/**',
+      '.next/**',
+      '.vercel/**',
+      '.wrangler/**',
+      'coverage/**',
+      'playwright-report/**',
+    ],
   },
 ]

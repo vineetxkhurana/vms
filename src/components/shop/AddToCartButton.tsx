@@ -4,7 +4,15 @@ import { useCart } from '@/hooks/useCart'
 import type { Product } from '@/types'
 import { Icon } from '@/components/ui/Icon'
 
-export default function AddToCartButton({ product, disabled, fullWidth }: { product: Product; disabled?: boolean; fullWidth?: boolean }) {
+export default function AddToCartButton({
+  product,
+  disabled,
+  fullWidth,
+}: {
+  product: Product
+  disabled?: boolean
+  fullWidth?: boolean
+}) {
   const { items, add, update, remove } = useCart()
   const cartItem = items.find(i => i.product.id === product.id)
   const qty = cartItem?.quantity ?? 0
@@ -26,29 +34,58 @@ export default function AddToCartButton({ product, disabled, fullWidth }: { prod
   // ── Stepper (item already in cart) ──
   if (qty > 0) {
     const stepperStyle = {
-      display: 'flex', alignItems: 'center', gap: fullWidth ? 16 : 4,
-      ...(fullWidth ? {
-        width: '100%', justifyContent: 'center', padding: '10px 0', borderRadius: 100,
-        background: 'rgba(0,194,255,0.06)', border: '1px solid rgba(0,194,255,0.2)',
-      } : {}),
+      display: 'flex',
+      alignItems: 'center',
+      gap: fullWidth ? 16 : 4,
+      ...(fullWidth
+        ? {
+            width: '100%',
+            justifyContent: 'center',
+            padding: '10px 0',
+            borderRadius: 100,
+            background: 'rgba(0,194,255,0.06)',
+            border: '1px solid rgba(0,194,255,0.2)',
+          }
+        : {}),
     }
     const btnSize = fullWidth ? 38 : 32
     const btnStyle = (bg: string) => ({
-      width: btnSize, height: btnSize, borderRadius: '50%',
-      background: bg, border: 'none', cursor: 'pointer',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      color: '#fff', transition: 'all 0.15s ease', flexShrink: 0 as const,
+      width: btnSize,
+      height: btnSize,
+      borderRadius: '50%',
+      background: bg,
+      border: 'none',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      color: '#fff',
+      transition: 'all 0.15s ease',
+      flexShrink: 0 as const,
     })
     return (
       <div style={stepperStyle}>
-        <button onClick={handleDecrement} style={btnStyle(qty === 1 ? 'rgba(239,68,68,0.7)' : 'rgba(0,194,255,0.25)')}>
-          <Icon name={qty === 1 ? 'delete' : 'remove'} className={fullWidth ? 'text-[18px]' : 'text-[16px]'} />
+        <button
+          onClick={handleDecrement}
+          style={btnStyle(qty === 1 ? 'rgba(239,68,68,0.7)' : 'rgba(0,194,255,0.25)')}
+        >
+          <Icon
+            name={qty === 1 ? 'delete' : 'remove'}
+            className={fullWidth ? 'text-[18px]' : 'text-[16px]'}
+          />
         </button>
-        <span style={{
-          minWidth: fullWidth ? 40 : 28, textAlign: 'center',
-          fontFamily: 'Manrope, sans-serif', fontWeight: 800,
-          fontSize: fullWidth ? 18 : 15, color: '#e8f4fd',
-        }}>{qty}</span>
+        <span
+          style={{
+            minWidth: fullWidth ? 40 : 28,
+            textAlign: 'center',
+            fontFamily: 'Manrope, sans-serif',
+            fontWeight: 800,
+            fontSize: fullWidth ? 18 : 15,
+            color: '#e8f4fd',
+          }}
+        >
+          {qty}
+        </span>
         <button onClick={handleIncrement} style={btnStyle('rgba(0,194,255,0.25)')}>
           <Icon name="add" className={fullWidth ? 'text-[18px]' : 'text-[16px]'} />
         </button>
@@ -68,7 +105,8 @@ export default function AddToCartButton({ product, disabled, fullWidth }: { prod
           boxShadow: '0 16px 48px rgba(0,194,255,0.3)',
           opacity: disabled ? 0.5 : 1,
           cursor: disabled ? 'not-allowed' : 'pointer',
-          border: 'none', transition: 'all 0.25s ease',
+          border: 'none',
+          transition: 'all 0.25s ease',
         }}
       >
         <Icon name="add_shopping_cart" fill className="text-[22px]" />
@@ -82,11 +120,17 @@ export default function AddToCartButton({ product, disabled, fullWidth }: { prod
       onClick={handleAdd}
       disabled={disabled}
       style={{
-        width: 40, height: 40, borderRadius: '50%',
+        width: 40,
+        height: 40,
+        borderRadius: '50%',
         background: 'linear-gradient(135deg, #00c2ff, #7c3aed)',
-        border: 'none', cursor: disabled ? 'not-allowed' : 'pointer',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: '#fff', transition: 'all 0.2s ease',
+        border: 'none',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: '#fff',
+        transition: 'all 0.2s ease',
         opacity: disabled ? 0.5 : 1,
         boxShadow: '0 4px 20px rgba(0,194,255,0.3)',
         flexShrink: 0,

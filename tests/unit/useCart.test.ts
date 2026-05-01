@@ -5,10 +5,16 @@ import { renderHook, act } from '@testing-library/react'
 const localStorageMock = (() => {
   let store: Record<string, string> = {}
   return {
-    getItem:  (k: string) => store[k] ?? null,
-    setItem:  (k: string, v: string) => { store[k] = v },
-    removeItem: (k: string) => { delete store[k] },
-    clear:    () => { store = {} },
+    getItem: (k: string) => store[k] ?? null,
+    setItem: (k: string, v: string) => {
+      store[k] = v
+    },
+    removeItem: (k: string) => {
+      delete store[k]
+    },
+    clear: () => {
+      store = {}
+    },
   }
 })()
 Object.defineProperty(window, 'localStorage', { value: localStorageMock })
@@ -20,7 +26,7 @@ const makeProduct = (overrides: Partial<Product> = {}): Product => ({
   id: 1,
   name: 'Test Med',
   description: null,
-  price: 10_000,        // ₹100 in paise
+  price: 10_000, // ₹100 in paise
   price_retailer: null,
   price_wholesaler: null,
   brand: 'other',
@@ -51,7 +57,9 @@ describe('useCart', () => {
     const { result } = renderHook(() => useCart())
     const product = makeProduct({ id: 10 })
 
-    act(() => { result.current.add(product) })
+    act(() => {
+      result.current.add(product)
+    })
 
     expect(result.current.items).toHaveLength(1)
     expect(result.current.items[0].quantity).toBe(1)
@@ -61,8 +69,12 @@ describe('useCart', () => {
     const { result } = renderHook(() => useCart())
     const product = makeProduct({ id: 20 })
 
-    act(() => { result.current.add(product) })
-    act(() => { result.current.add(product) })
+    act(() => {
+      result.current.add(product)
+    })
+    act(() => {
+      result.current.add(product)
+    })
 
     expect(result.current.items).toHaveLength(1)
     expect(result.current.items[0].quantity).toBe(2)
@@ -71,8 +83,12 @@ describe('useCart', () => {
   it('treats different product ids as separate cart items', () => {
     const { result } = renderHook(() => useCart())
 
-    act(() => { result.current.add(makeProduct({ id: 30, variant_label: '100ml' })) })
-    act(() => { result.current.add(makeProduct({ id: 31, variant_label: '500ml' })) })
+    act(() => {
+      result.current.add(makeProduct({ id: 30, variant_label: '100ml' }))
+    })
+    act(() => {
+      result.current.add(makeProduct({ id: 31, variant_label: '500ml' }))
+    })
 
     expect(result.current.items).toHaveLength(2)
   })
@@ -81,8 +97,12 @@ describe('useCart', () => {
     const { result } = renderHook(() => useCart())
     const product = makeProduct({ id: 40 })
 
-    act(() => { result.current.add(product) })
-    act(() => { result.current.remove(product.id) })
+    act(() => {
+      result.current.add(product)
+    })
+    act(() => {
+      result.current.remove(product.id)
+    })
 
     expect(result.current.items).toHaveLength(0)
   })
@@ -91,8 +111,12 @@ describe('useCart', () => {
     const { result } = renderHook(() => useCart())
     const product = makeProduct({ id: 50 })
 
-    act(() => { result.current.add(product) })
-    act(() => { result.current.update(product.id, 5) })
+    act(() => {
+      result.current.add(product)
+    })
+    act(() => {
+      result.current.update(product.id, 5)
+    })
 
     expect(result.current.items[0].quantity).toBe(5)
   })
@@ -101,8 +125,12 @@ describe('useCart', () => {
     const { result } = renderHook(() => useCart())
     const product = makeProduct({ id: 60 })
 
-    act(() => { result.current.add(product) })
-    act(() => { result.current.update(product.id, 0) })
+    act(() => {
+      result.current.add(product)
+    })
+    act(() => {
+      result.current.update(product.id, 0)
+    })
 
     expect(result.current.items).toHaveLength(0)
   })
@@ -110,19 +138,29 @@ describe('useCart', () => {
   it('calculates total in paise correctly', () => {
     const { result } = renderHook(() => useCart())
     const p1 = makeProduct({ id: 70, price: 10_000 }) // ₹100
-    const p2 = makeProduct({ id: 71, price: 5_000  }) // ₹50
+    const p2 = makeProduct({ id: 71, price: 5_000 }) // ₹50
 
-    act(() => { result.current.add(p1) })
-    act(() => { result.current.add(p1) }) // qty 2 → ₹200
-    act(() => { result.current.add(p2) }) // qty 1 → ₹50
+    act(() => {
+      result.current.add(p1)
+    })
+    act(() => {
+      result.current.add(p1)
+    }) // qty 2 → ₹200
+    act(() => {
+      result.current.add(p2)
+    }) // qty 1 → ₹50
 
     expect(result.current.total).toBe(25_000) // ₹250
   })
 
   it('clears the cart', () => {
     const { result } = renderHook(() => useCart())
-    act(() => { result.current.add(makeProduct({ id: 80 })) })
-    act(() => { result.current.clear() })
+    act(() => {
+      result.current.add(makeProduct({ id: 80 }))
+    })
+    act(() => {
+      result.current.clear()
+    })
     expect(result.current.items).toHaveLength(0)
     expect(result.current.total).toBe(0)
   })

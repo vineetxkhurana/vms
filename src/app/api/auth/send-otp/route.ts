@@ -10,7 +10,11 @@ import { z } from 'zod'
 export const runtime = 'edge'
 
 const Schema = z.object({
-  identifier: z.string().min(1).max(200).transform(s => s.trim().toLowerCase()),
+  identifier: z
+    .string()
+    .min(1)
+    .max(200)
+    .transform(s => s.trim().toLowerCase()),
   type: z.enum(['login', 'register', 'reset']).default('login'),
 })
 
@@ -31,7 +35,8 @@ export async function POST(req: Request) {
 
   // Validate format
   const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!isPhone(normId) && !emailRe.test(normId)) return err('Enter a valid email or 10-digit phone number')
+  if (!isPhone(normId) && !emailRe.test(normId))
+    return err('Enter a valid email or 10-digit phone number')
 
   const { code } = await sendOTP(db, normId, type)
   // In dev, log code to server console only — never expose in API response

@@ -20,8 +20,15 @@ interface Props {
  * Handles loading skeletons and empty states automatically.
  */
 export function AdminTable({
-  headers, skeletonCols, skeletonRows = 6, loading, empty,
-  emptyIcon = 'inbox', emptyMessage = 'No data found', children, footer,
+  headers,
+  skeletonCols,
+  skeletonRows = 6,
+  loading,
+  empty,
+  emptyIcon = 'inbox',
+  emptyMessage = 'No data found',
+  children,
+  footer,
 }: Props) {
   const cols = skeletonCols ?? headers.map(() => 80)
 
@@ -31,7 +38,10 @@ export function AdminTable({
         <thead style={{ borderBottom: '1px solid rgba(0,194,255,0.1)' }}>
           <tr>
             {headers.map(h => (
-              <th key={h} className="text-left px-4 py-4 text-xs font-bold text-on-surface-muted uppercase tracking-widest">
+              <th
+                key={h}
+                className="text-left px-4 py-4 text-xs font-bold text-on-surface-muted uppercase tracking-widest"
+              >
                 {h}
               </th>
             ))}

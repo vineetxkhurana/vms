@@ -16,7 +16,10 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (ready && !user) { router.replace('/login'); return }
+    if (ready && !user) {
+      router.replace('/login')
+      return
+    }
     if (!ready || !user) return
 
     const token = localStorage.getItem('vms_token')
@@ -24,10 +27,15 @@ export default function OrdersPage() {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     })
       .then(r => {
-        if (r.status === 401) { router.replace('/login'); return null }
+        if (r.status === 401) {
+          router.replace('/login')
+          return null
+        }
         return r.json()
       })
-      .then((d) => { if (d) setOrders((d as { orders?: Order[] }).orders ?? []) })
+      .then(d => {
+        if (d) setOrders((d as { orders?: Order[] }).orders ?? [])
+      })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [ready, user, router])
@@ -49,15 +57,48 @@ export default function OrdersPage() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {orders.map(o => (
-              <div key={o.id} className="glass" style={{ borderRadius: 16, padding: '24px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+              <div
+                key={o.id}
+                className="glass"
+                style={{
+                  borderRadius: 16,
+                  padding: '24px 28px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: 16,
+                }}
+              >
                 <div>
-                  <div style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: 15, color: '#e8f4fd', marginBottom: 6 }}>Order #{o.id}</div>
+                  <div
+                    style={{
+                      fontFamily: 'Manrope, sans-serif',
+                      fontWeight: 700,
+                      fontSize: 15,
+                      color: '#e8f4fd',
+                      marginBottom: 6,
+                    }}
+                  >
+                    Order #{o.id}
+                  </div>
                   <div style={{ fontSize: 13, color: '#8fafc7', fontFamily: 'Inter, sans-serif' }}>
-                    {new Date(o.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    {new Date(o.created_at).toLocaleDateString('en-IN', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })}
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                  <span style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, fontSize: 18, color: '#00c2ff' }}>
+                  <span
+                    style={{
+                      fontFamily: 'Manrope, sans-serif',
+                      fontWeight: 800,
+                      fontSize: 18,
+                      color: '#00c2ff',
+                    }}
+                  >
                     ₹{(o.total / 100).toFixed(2)}
                   </span>
                   <StatusBadge status={o.status} />
@@ -70,4 +111,3 @@ export default function OrdersPage() {
     </div>
   )
 }
-

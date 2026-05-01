@@ -16,7 +16,7 @@ export default defineConfig({
         'node_modules/**',
         '.next/**',
         'tests/**',
-        'src/app/**',        // Route handlers tested via integration, not unit
+        'src/app/**', // Route handlers tested via integration, not unit
         '**/*.config.*',
       ],
     },

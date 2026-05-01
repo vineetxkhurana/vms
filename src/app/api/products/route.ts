@@ -19,16 +19,22 @@ export async function GET(req: Request) {
   // ── Cart rehydration mode: fetch specific product IDs with fresh tier prices ──
   const idsParam = searchParams.get('ids')
   if (idsParam) {
-    const ids = idsParam.split(',').map(Number).filter(n => n > 0 && Number.isInteger(n)).slice(0, 50)
+    const ids = idsParam
+      .split(',')
+      .map(Number)
+      .filter(n => n > 0 && Number.isInteger(n))
+      .slice(0, 50)
     if (ids.length === 0) return ok({ products: [] })
 
     const { results } = await db
-      .prepare(`SELECT p.id, p.name, p.description, p.price, p.price_retailer, p.price_wholesaler,
+      .prepare(
+        `SELECT p.id, p.name, p.description, p.price, p.price_retailer, p.price_wholesaler,
                   p.brand, p.stock, p.category_id, p.image_url, p.is_active,
                   p.variant_group, p.variant_label, p.variant_type,
                   c.name as category_name
                 FROM products p LEFT JOIN categories c ON p.category_id=c.id
-                WHERE p.id IN (${ids.map(() => '?').join(',')}) AND p.is_active=1`)
+                WHERE p.id IN (${ids.map(() => '?').join(',')}) AND p.is_active=1`,
+      )
       .bind(...ids)
       .all<any>()
 
@@ -39,12 +45,12 @@ export async function GET(req: Request) {
     return ok({ products })
   }
 
-  const page     = Math.max(1, Number(searchParams.get('page') ?? 1))
-  const limit    = Math.min(50, Math.max(1, Number(searchParams.get('limit') ?? 20)))
-  const offset   = (page - 1) * limit
-  const search   = searchParams.get('search')?.trim().slice(0, 100)
+  const page = Math.max(1, Number(searchParams.get('page') ?? 1))
+  const limit = Math.min(50, Math.max(1, Number(searchParams.get('limit') ?? 20)))
+  const offset = (page - 1) * limit
+  const search = searchParams.get('search')?.trim().slice(0, 100)
   const category = searchParams.get('category')
-  const brand    = searchParams.get('brand')
+  const brand = searchParams.get('brand')
 
   let sql = `SELECT p.id, p.name, p.description, p.price, p.price_retailer, p.price_wholesaler,
                p.brand, p.stock, p.category_id, p.image_url, p.is_active,
@@ -53,21 +59,37 @@ export async function GET(req: Request) {
              FROM products p LEFT JOIN categories c ON p.category_id=c.id WHERE p.is_active=1`
   const params: unknown[] = []
 
-  if (search)   { sql += ' AND (p.name LIKE ? OR p.description LIKE ?)'; params.push(`%${search}%`, `%${search}%`) }
-  if (category) { sql += ' AND p.category_id=?'; params.push(Number(category)) }
-  if (brand && ['VMS','other'].includes(brand)) { sql += ' AND p.brand=?'; params.push(brand) }
+  if (search) {
+    sql += ' AND (p.name LIKE ? OR p.description LIKE ?)'
+    params.push(`%${search}%`, `%${search}%`)
+  }
+  if (category) {
+    sql += ' AND p.category_id=?'
+    params.push(Number(category))
+  }
+  if (brand && ['VMS', 'other'].includes(brand)) {
+    sql += ' AND p.brand=?'
+    params.push(brand)
+  }
 
   // Get total count for pagination
-  const countSql = `SELECT COUNT(*) as total FROM products p LEFT JOIN categories c ON p.category_id=c.id WHERE p.is_active=1`
-    + (search ? ' AND (p.name LIKE ? OR p.description LIKE ?)' : '')
-    + (category ? ' AND p.category_id=?' : '')
-    + (brand && ['VMS','other'].includes(brand) ? ' AND p.brand=?' : '')
-  const countRow = await db.prepare(countSql).bind(...params).first<{ total: number }>()
+  const countSql =
+    `SELECT COUNT(*) as total FROM products p LEFT JOIN categories c ON p.category_id=c.id WHERE p.is_active=1` +
+    (search ? ' AND (p.name LIKE ? OR p.description LIKE ?)' : '') +
+    (category ? ' AND p.category_id=?' : '') +
+    (brand && ['VMS', 'other'].includes(brand) ? ' AND p.brand=?' : '')
+  const countRow = await db
+    .prepare(countSql)
+    .bind(...params)
+    .first<{ total: number }>()
   const total = countRow?.total ?? 0
 
   sql += ` ORDER BY p.id DESC LIMIT ${limit} OFFSET ${offset}`
 
-  const { results } = await db.prepare(sql).bind(...params).all<any>()
+  const { results } = await db
+    .prepare(sql)
+    .bind(...params)
+    .all<any>()
 
   // Apply tier pricing per requesting user's role
   const priced = results.map(p => ({
@@ -134,17 +156,31 @@ export async function POST(req: Request) {
   const auth = await requireAdmin(req)
   if (auth instanceof NextResponse) return auth
 
-  const body = await req.json() as Record<string, unknown>
-  const { name, description, price, brand, stock, category_id, image_url,
-          price_retailer, price_wholesaler, variant_group, variant_label, variant_type } = body
+  const body = (await req.json()) as Record<string, unknown>
+  const {
+    name,
+    description,
+    price,
+    brand,
+    stock,
+    category_id,
+    image_url,
+    price_retailer,
+    price_wholesaler,
+    variant_group,
+    variant_label,
+    variant_type,
+  } = body
 
   if (!name || !price) return err('name and price required')
 
   const result = await db
-    .prepare(`INSERT INTO products
+    .prepare(
+      `INSERT INTO products
       (name, description, price, brand, stock, category_id, image_url,
        price_retailer, price_wholesaler, variant_group, variant_label, variant_type)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?) RETURNING id`)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?) RETURNING id`,
+    )
     .bind(
       name,
       description ?? null,

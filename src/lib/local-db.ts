@@ -9,11 +9,11 @@
 class LocalStatement {
   private sql: string
   private params: unknown[]
-  private sqlite: any  // typed as any — this file is only loaded at Node.js runtime
+  private sqlite: any // typed as any — this file is only loaded at Node.js runtime
 
   constructor(sqlite: any, sql: string, params: unknown[] = []) {
     this.sqlite = sqlite
-    this.sql    = sql
+    this.sql = sql
     this.params = params
   }
 
@@ -23,7 +23,9 @@ class LocalStatement {
 
   async first<T>(): Promise<T | null> {
     try {
-      const row = this.sqlite.prepare(this.sql).get(...(this.params as Parameters<typeof this.sqlite.prepare>)) 
+      const row = this.sqlite
+        .prepare(this.sql)
+        .get(...(this.params as Parameters<typeof this.sqlite.prepare>))
       return (row as T) ?? null
     } catch (e) {
       console.error('[local-db] first() error:', e)
@@ -33,11 +35,19 @@ class LocalStatement {
 
   async run(): Promise<{ success: boolean; meta: Record<string, unknown>; results: unknown[] }> {
     try {
-      const info = this.sqlite.prepare(this.sql).run(...(this.params as Parameters<typeof this.sqlite.prepare>))
+      const info = this.sqlite
+        .prepare(this.sql)
+        .run(...(this.params as Parameters<typeof this.sqlite.prepare>))
       return {
         success: true,
         results: [],
-        meta: { last_row_id: info.lastInsertRowid, changes: info.changes, duration: 0, rows_read: 0, rows_written: info.changes },
+        meta: {
+          last_row_id: info.lastInsertRowid,
+          changes: info.changes,
+          duration: 0,
+          rows_read: 0,
+          rows_written: info.changes,
+        },
       }
     } catch (e) {
       console.error('[local-db] run() error:', e)
@@ -51,10 +61,30 @@ class LocalStatement {
       // better-sqlite3: all() only works on SELECT — use run() for INSERT/UPDATE/DELETE
       if (stmt.reader) {
         const results = stmt.all(...(this.params as Parameters<typeof this.sqlite.prepare>)) as T[]
-        return { success: true, results, meta: { last_row_id: 0, changes: 0, duration: 0, rows_read: results.length, rows_written: 0 } }
+        return {
+          success: true,
+          results,
+          meta: {
+            last_row_id: 0,
+            changes: 0,
+            duration: 0,
+            rows_read: results.length,
+            rows_written: 0,
+          },
+        }
       } else {
         const info = stmt.run(...(this.params as Parameters<typeof this.sqlite.prepare>))
-        return { success: true, results: [], meta: { last_row_id: info.lastInsertRowid, changes: info.changes, duration: 0, rows_read: 0, rows_written: info.changes } }
+        return {
+          success: true,
+          results: [],
+          meta: {
+            last_row_id: info.lastInsertRowid,
+            changes: info.changes,
+            duration: 0,
+            rows_read: 0,
+            rows_written: info.changes,
+          },
+        }
       }
     } catch (e) {
       console.error('[local-db] all() error:', e)
@@ -98,9 +128,9 @@ export function getLocalDB(): D1Database | null {
   if (_localDB) return _localDB as unknown as D1Database
 
   try {
-    const Database  = require('better-sqlite3')
-    const path      = require('path')
-    const fs        = require('fs')
+    const Database = require('better-sqlite3')
+    const path = require('path')
+    const fs = require('fs')
 
     // Prefer wrangler's local D1 SQLite (created by `npm run db:local`)
     const wranglerDir = path.join(process.cwd(), '.wrangler/state/v3/d1/miniflare-D1DatabaseObject')
@@ -131,4 +161,3 @@ export function getLocalDB(): D1Database | null {
  * - CF Pages production: uses getRequestContext().env.DB
  * - Local next dev: uses the SQLite shim from getLocalDB()
  */
-

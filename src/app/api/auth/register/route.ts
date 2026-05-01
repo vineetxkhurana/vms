@@ -13,9 +13,12 @@ import { z } from 'zod'
 export const runtime = 'edge'
 
 const RegisterSchema = z.object({
-  identifier: z.string().min(1).transform(s => s.trim().toLowerCase()),
-  name:       z.string().min(1).max(80),
-  password:   z.string().min(8).optional(),
+  identifier: z
+    .string()
+    .min(1)
+    .transform(s => s.trim().toLowerCase()),
+  name: z.string().min(1).max(80),
+  password: z.string().min(8).optional(),
 })
 
 export async function POST(req: Request) {
@@ -30,11 +33,12 @@ export async function POST(req: Request) {
 
   const { identifier, name, password } = body.data
   const isPhoneId = isPhone(identifier)
-  const normId    = isPhoneId ? normalisePhone(identifier) : identifier
-  const col       = isPhoneId ? 'phone' : 'email'
+  const normId = isPhoneId ? normalisePhone(identifier) : identifier
+  const col = isPhoneId ? 'phone' : 'email'
 
   const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!isPhoneId && !emailRe.test(normId)) return err('Enter a valid email or 10-digit phone number')
+  if (!isPhoneId && !emailRe.test(normId))
+    return err('Enter a valid email or 10-digit phone number')
 
   const exists = await db.prepare(`SELECT id FROM users WHERE ${col} = ?`).bind(normId).first()
   if (exists) return err(`${isPhoneId ? 'Phone' : 'Email'} already registered`, 409)
@@ -51,8 +55,12 @@ export async function POST(req: Request) {
 
   // Don't issue a session token — user must verify via OTP first
   const { country, sessionId } = analyticsContext(req)
-  trackEvent(db, 'user_registered', { method: isPhoneId ? 'phone' : 'email' }, { userId: result!.id, sessionId: sessionId ?? undefined, country: country ?? undefined })
+  trackEvent(
+    db,
+    'user_registered',
+    { method: isPhoneId ? 'phone' : 'email' },
+    { userId: result!.id, sessionId: sessionId ?? undefined, country: country ?? undefined },
+  )
 
   return ok({ user: { id: result!.id, name, role: result!.role }, needs_otp_verify: true })
 }
-

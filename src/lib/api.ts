@@ -2,7 +2,11 @@ import { NextResponse } from 'next/server'
 import * as Sentry from '@sentry/nextjs'
 
 function captureException(error: unknown, ctx?: Record<string, unknown>) {
-  try { Sentry.captureException(error, ctx ? { extra: ctx } : undefined) } catch { /* no-op */ }
+  try {
+    Sentry.captureException(error, ctx ? { extra: ctx } : undefined)
+  } catch {
+    /* no-op */
+  }
 }
 
 // Note: `runtime` is set per-route, NOT in lib files.
@@ -28,13 +32,15 @@ export async function rateLimit(
   const resetAt = now + windowSec
   try {
     const row = await db
-      .prepare(`
+      .prepare(
+        `
         INSERT INTO rate_limits (key, count, reset_at) VALUES (?, 1, ?)
         ON CONFLICT(key) DO UPDATE SET
           count    = CASE WHEN reset_at <= ? THEN 1          ELSE count + 1 END,
           reset_at = CASE WHEN reset_at <= ? THEN ?          ELSE reset_at  END
         RETURNING count
-      `)
+      `,
+      )
       .bind(key, resetAt, now, now, resetAt)
       .first<{ count: number }>()
     return (row?.count ?? 1) <= limit
@@ -67,4 +73,3 @@ export async function getDB(req: Request): Promise<D1Database | null> {
   captureException(new Error('getDB: no DB binding available'), { url: (req as any).url })
   return null
 }
-

@@ -11,21 +11,30 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const user = await getUser(req)
 
   const product = await db
-    .prepare(`SELECT p.*, c.name as category_name
+    .prepare(
+      `SELECT p.*, c.name as category_name
               FROM products p LEFT JOIN categories c ON p.category_id=c.id
-              WHERE p.id=? AND p.is_active=1`)
+              WHERE p.id=? AND p.is_active=1`,
+    )
     .bind(Number(id))
     .first<any>()
   if (!product) return err('Not found', 404)
 
-  const resolvedPrice = resolvePrice(product.price, product.price_retailer, product.price_wholesaler, user?.role ?? null)
+  const resolvedPrice = resolvePrice(
+    product.price,
+    product.price_retailer,
+    product.price_wholesaler,
+    user?.role ?? null,
+  )
 
   // If this product belongs to a variant group, fetch all siblings
   let variants: any[] = []
   if (product.variant_group) {
     const { results } = await db
-      .prepare(`SELECT id, name, variant_label as label, price, price_retailer, price_wholesaler, stock, image_url
-                FROM products WHERE variant_group=? AND is_active=1 AND id!=? ORDER BY id ASC`)
+      .prepare(
+        `SELECT id, name, variant_label as label, price, price_retailer, price_wholesaler, stock, image_url
+                FROM products WHERE variant_group=? AND is_active=1 AND id!=? ORDER BY id ASC`,
+      )
       .bind(product.variant_group, product.id)
       .all<any>()
     variants = results.map(v => ({
@@ -48,14 +57,30 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (auth instanceof NextResponse) return auth
   const { id } = await params
 
-  const body = await req.json() as Record<string, unknown>
-  const fields = ['name','description','price','brand','stock','category_id','image_url','is_active',
-                  'price_retailer','price_wholesaler','variant_group','variant_label','variant_type']
+  const body = (await req.json()) as Record<string, unknown>
+  const fields = [
+    'name',
+    'description',
+    'price',
+    'brand',
+    'stock',
+    'category_id',
+    'image_url',
+    'is_active',
+    'price_retailer',
+    'price_wholesaler',
+    'variant_group',
+    'variant_label',
+    'variant_type',
+  ]
   const updates = Object.entries(body).filter(([k]) => fields.includes(k))
   if (!updates.length) return err('Nothing to update')
 
   const sql = `UPDATE products SET ${updates.map(([k]) => `${k}=?`).join(',')} WHERE id=?`
-  await db.prepare(sql).bind(...updates.map(([,v]) => v), Number(id)).run()
+  await db
+    .prepare(sql)
+    .bind(...updates.map(([, v]) => v), Number(id))
+    .run()
   return ok({ ok: true })
 }
 

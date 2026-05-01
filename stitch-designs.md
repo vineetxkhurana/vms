@@ -5,23 +5,23 @@
 
 ## ✅ Generated Project
 
-| Resource | Value |
-|----------|-------|
-| **Stitch Project ID** | `5770715802724318458` |
-| **GCP Project** | `vms-ecommerce-09045` |
-| **Open in Stitch** | https://stitch.withgoogle.com |
+| Resource              | Value                         |
+| --------------------- | ----------------------------- |
+| **Stitch Project ID** | `5770715802724318458`         |
+| **GCP Project**       | `vms-ecommerce-09045`         |
+| **Open in Stitch**    | https://stitch.withgoogle.com |
 
 ## ✅ Generated Screens
 
-| Screen | Stitch Screen ID |
-|--------|-----------------|
-| Homepage | `943a907d26534af681f07e5400755860` |
+| Screen            | Stitch Screen ID                   |
+| ----------------- | ---------------------------------- |
+| Homepage          | `943a907d26534af681f07e5400755860` |
 | Product Catalogue | `199f4541d2a64847ae09496540534409` |
-| Product Detail | `e72b75736f584baba5f9213d70d5a9a5` |
-| Shopping Cart | `63763955209d470988a2cc639835d964` |
-| Checkout | `a719c861e873472784b494edd851b97a` |
-| Orders | `5c115b04ee814e42a42036dba751ea5d` |
-| Admin Dashboard | `175aced70c2f42d3a66738f5032e7f0c` |
+| Product Detail    | `e72b75736f584baba5f9213d70d5a9a5` |
+| Shopping Cart     | `63763955209d470988a2cc639835d964` |
+| Checkout          | `a719c861e873472784b494edd851b97a` |
+| Orders            | `5c115b04ee814e42a42036dba751ea5d` |
+| Admin Dashboard   | `175aced70c2f42d3a66738f5032e7f0c` |
 
 ### CLI commands
 
