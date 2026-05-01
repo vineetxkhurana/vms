@@ -28,14 +28,14 @@ describe('JWT Security', () => {
   })
 
   it('rejects expired tokens', async () => {
-    const token = await makeToken({ sub: '1', role: 'user' }, { expiry: '0s' })
+    const token = await makeToken({ sub: '1', role: 'customer' }, { expiry: '0s' })
     await new Promise(r => setTimeout(r, 1100))
 
     await expect(jwtVerify(token, SECRET_BYTES)).rejects.toThrow()
   })
 
   it('rejects modified payload (tampered token)', async () => {
-    const token = await makeToken({ sub: '1', role: 'user' })
+    const token = await makeToken({ sub: '1', role: 'customer' })
     const parts = token.split('.')
     const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString())
     payload.role = 'admin'
@@ -54,9 +54,9 @@ describe('JWT Security', () => {
   })
 
   it('role escalation via token is prevented by signature', async () => {
-    const userToken = await makeToken({ sub: '5', role: 'user' })
+    const userToken = await makeToken({ sub: '5', role: 'customer' })
     const { payload } = await jwtVerify(userToken, SECRET_BYTES)
-    expect(payload.role).toBe('user')
+    expect(payload.role).toBe('customer')
   })
 })
 
@@ -152,7 +152,7 @@ describe('Cookie Configuration', () => {
 
     for (const file of files) {
       const content = fs.readFileSync(file, 'utf8')
-      const cookieSetCalls = content.match(/cookies\.set\([^)]+\)/gs) ?? []
+      const cookieSetCalls = content.match(/cookies\.set\([^)]+\)/g) ?? []
       for (const call of cookieSetCalls) {
         expect(call).toContain('secure')
       }
@@ -173,9 +173,9 @@ describe('Cookie Configuration', () => {
 describe('Price Tier Resolution', () => {
   it('returns base price for regular users with small quantity', async () => {
     const { resolvePrice } = await import('../../src/lib/auth')
-    expect(resolvePrice(10000, 9000, 7500, 'user')).toBe(10000)
+    expect(resolvePrice(10000, 9000, 7500, 'customer')).toBe(10000)
     expect(resolvePrice(10000, 9000, 7500, null)).toBe(10000)
-    expect(resolvePrice(10000, 9000, 7500, 'user', 3)).toBe(10000)
+    expect(resolvePrice(10000, 9000, 7500, 'customer', 3)).toBe(10000)
   })
 
   it('returns retailer price for retailers regardless of quantity', async () => {
@@ -191,16 +191,16 @@ describe('Price Tier Resolution', () => {
 
   it('upgrades to retailer price at quantity threshold (6+)', async () => {
     const { resolvePrice } = await import('../../src/lib/auth')
-    expect(resolvePrice(10000, 9000, 7500, 'user', 5)).toBe(10000)  // below threshold
-    expect(resolvePrice(10000, 9000, 7500, 'user', 6)).toBe(9000)   // at threshold
-    expect(resolvePrice(10000, 9000, 7500, 'user', 10)).toBe(9000)  // above threshold
+    expect(resolvePrice(10000, 9000, 7500, 'customer', 5)).toBe(10000)  // below threshold
+    expect(resolvePrice(10000, 9000, 7500, 'customer', 6)).toBe(9000)   // at threshold
+    expect(resolvePrice(10000, 9000, 7500, 'customer', 10)).toBe(9000)  // above threshold
     expect(resolvePrice(10000, 9000, 7500, null, 6)).toBe(9000)     // no role, quantity kicks in
   })
 
   it('upgrades to wholesaler price at quantity threshold (21+)', async () => {
     const { resolvePrice } = await import('../../src/lib/auth')
-    expect(resolvePrice(10000, 9000, 7500, 'user', 20)).toBe(9000)  // still retailer
-    expect(resolvePrice(10000, 9000, 7500, 'user', 21)).toBe(7500)  // wholesaler threshold
+    expect(resolvePrice(10000, 9000, 7500, 'customer', 20)).toBe(9000)  // still retailer
+    expect(resolvePrice(10000, 9000, 7500, 'customer', 21)).toBe(7500)  // wholesaler threshold
     expect(resolvePrice(10000, 9000, 7500, null, 50)).toBe(7500)    // big order
   })
 
@@ -208,9 +208,9 @@ describe('Price Tier Resolution', () => {
     const { resolvePrice } = await import('../../src/lib/auth')
     expect(resolvePrice(10000, null, null, 'retailer')).toBe(10000)
     expect(resolvePrice(10000, null, null, 'wholesaler')).toBe(10000)
-    expect(resolvePrice(10000, null, null, 'user', 21)).toBe(10000)
+    expect(resolvePrice(10000, null, null, 'customer', 21)).toBe(10000)
     // Retailer price null but wholesaler set — quantity 6 falls back to base
-    expect(resolvePrice(10000, null, 7500, 'user', 6)).toBe(10000)
+    expect(resolvePrice(10000, null, 7500, 'customer', 6)).toBe(10000)
   })
 
   it('admin users get base price (no special pricing)', async () => {
