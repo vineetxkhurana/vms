@@ -372,7 +372,7 @@ export default function AdminProductsPage() {
                       style={{ width: 40, height: 40, objectFit: 'contain', padding: 4 }}
                     />
                   ) : (
-                    <Icon name="medication" fill className="text-on-surface-muted" />
+                    <Icon name="storefront" fill className="text-on-surface-muted" />
                   )}
                 </div>
                 <div>

@@ -16,7 +16,7 @@ const NAV_LINKS = [
 
 const BOTTOM_TABS = [
   { href: '/', label: 'Home', icon: 'home' },
-  { href: '/products', label: 'Shop', icon: 'medication' },
+  { href: '/products', label: 'Shop', icon: 'storefront' },
   { href: '/cart', label: 'Cart', icon: 'shopping_cart' },
   { href: '/orders', label: 'Orders', icon: 'receipt_long' },
   { href: '/account', label: 'Account', icon: 'person' },

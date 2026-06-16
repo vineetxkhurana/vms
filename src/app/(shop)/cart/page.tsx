@@ -33,13 +33,12 @@ export default function CartPage() {
       setPreview(null)
       return
     }
-    const token = localStorage.getItem('vms_token')
     try {
       const res = await fetch('/api/cart/preview', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
           items: items.map(i => ({ product_id: i.product.id, quantity: i.quantity })),
@@ -84,7 +83,7 @@ export default function CartPage() {
           Your cart is empty
         </h2>
         <p style={{ color: '#8fafc7', fontFamily: 'Inter, sans-serif' }}>
-          Add medicines or healthcare products to get started.
+          Add products to your cart to get started.
         </p>
         <Link
           href="/products"
@@ -193,7 +192,7 @@ export default function CartPage() {
                         fontSize: 28,
                       }}
                     >
-                      💊
+                      🛒
                     </span>
                   )}
                 </div>

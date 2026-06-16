@@ -24,65 +24,66 @@ Object.defineProperty(window, 'localStorage', { value: localStorageMock })
 const locationMock = { href: '' }
 Object.defineProperty(window, 'location', { value: locationMock, writable: true })
 
+// Mock fetch globally — useAuth now calls /api/auth/me
+const mockFetch = vi.fn()
+globalThis.fetch = mockFetch
+
 import { useAuth } from '@/hooks/useAuth'
 
 describe('useAuth', () => {
   beforeEach(() => {
     localStorageMock.clear()
+    mockFetch.mockReset()
+    // Default: /api/auth/me returns no user (not logged in)
+    mockFetch.mockResolvedValue(new Response(JSON.stringify({ user: null })))
   })
 
-  it('returns null user when nothing stored', async () => {
+  it('returns null user when not authenticated', async () => {
     const { result } = renderHook(() => useAuth())
-    // Wait for effect
     await act(async () => {})
     expect(result.current.user).toBeNull()
     expect(result.current.ready).toBe(true)
   })
 
-  it('returns user from localStorage when set', async () => {
-    const mockUser = {
-      id: 1,
-      name: 'Test User',
-      email: 'test@vms.com',
-      phone: null,
-      role: 'customer',
-    }
-    localStorageMock.setItem('vms_user', JSON.stringify(mockUser))
+  it('returns user from /api/auth/me when authenticated', async () => {
+    const mockUser = { id: 1, name: 'Test User', role: 'customer' }
+    mockFetch.mockResolvedValue(new Response(JSON.stringify({ user: mockUser })))
 
     const { result } = renderHook(() => useAuth())
     await act(async () => {})
 
     expect(result.current.user).toMatchObject(mockUser)
     expect(result.current.ready).toBe(true)
+    // Should also cache in localStorage
+    expect(localStorageMock.getItem('vms_user')).toBe(JSON.stringify(mockUser))
   })
 
-  it('returns null for malformed JSON in localStorage', async () => {
-    localStorageMock.setItem('vms_user', '{not valid json')
+  it('uses cached localStorage user while /api/auth/me resolves', async () => {
+    const cachedUser = { id: 1, name: 'Cached', role: 'customer' }
+    localStorageMock.setItem('vms_user', JSON.stringify(cachedUser))
 
     const { result } = renderHook(() => useAuth())
+    // Before fetch resolves, should have cached user
+    expect(result.current.user).toMatchObject(cachedUser)
     await act(async () => {})
-
-    expect(result.current.user).toBeNull()
-    expect(result.current.ready).toBe(true)
   })
 
   it('signOut clears localStorage and redirects', async () => {
-    const mockUser = { id: 1, name: 'Test', email: null, phone: '9876543210', role: 'customer' }
-    localStorageMock.setItem('vms_token', 'tok_abc')
+    const mockUser = { id: 1, name: 'Test', role: 'customer' }
+    mockFetch.mockResolvedValue(new Response(JSON.stringify({ user: mockUser })))
     localStorageMock.setItem('vms_user', JSON.stringify(mockUser))
 
     const { result } = renderHook(() => useAuth())
     await act(async () => {})
     expect(result.current.user).not.toBeNull()
 
-    // Mock fetch for logout API call
-    globalThis.fetch = vi.fn().mockResolvedValue(new Response('{}'))
+    // Mock the logout fetch
+    mockFetch.mockResolvedValue(new Response('{}'))
 
     await act(async () => {
       await result.current.signOut()
     })
 
-    expect(localStorageMock.getItem('vms_token')).toBeNull()
     expect(localStorageMock.getItem('vms_user')).toBeNull()
     expect(result.current.user).toBeNull()
     expect(window.location.href).toBe('/')

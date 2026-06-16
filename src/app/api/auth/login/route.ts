@@ -52,13 +52,11 @@ export async function POST(req: Request) {
 
   const token = await signToken({
     sub: String(user.id),
-    email: user.email ?? null,
-    phone: user.phone ?? null,
     role: user.role,
     name: user.name,
   })
 
-  const res = NextResponse.json({ token, user: { id: user.id, name: user.name, role: user.role } })
+  const res = NextResponse.json({ user: { id: user.id, name: user.name, role: user.role } })
   res.cookies.set('vms_token', token, {
     path: '/',
     httpOnly: true,

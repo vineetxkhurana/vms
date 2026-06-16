@@ -14,8 +14,6 @@ function secret() {
 
 export type JWTPayload = {
   sub: string // user id
-  email: string | null
-  phone: string | null
   role: UserRole
   name: string
 }

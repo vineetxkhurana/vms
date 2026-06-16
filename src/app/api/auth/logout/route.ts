@@ -11,7 +11,7 @@ export async function POST() {
     secure: true,
     maxAge: 0,
   })
-  res.cookies.set('vms_token_pub', '', {
+  res.cookies.set('vms_user_info', '', {
     path: '/',
     httpOnly: false,
     sameSite: 'lax',

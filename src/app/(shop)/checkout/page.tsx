@@ -70,17 +70,13 @@ export default function CheckoutPage() {
   const total = preview?.total ?? fallback.total
   const priceMap = new Map(preview?.items.map(i => [i.product_id, i]) ?? [])
 
-  const token = typeof window !== 'undefined' ? localStorage.getItem('vms_token') : null
-
   // Fetch resolved pricing
   useEffect(() => {
     if (items.length === 0) return
     fetch('/api/cart/preview', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         items: items.map(i => ({ product_id: i.product.id, quantity: i.quantity })),
       }),
@@ -92,11 +88,10 @@ export default function CheckoutPage() {
       .catch(() => {
         /* use fallback */
       })
-  }, [items, token])
+  }, [items])
 
   useEffect(() => {
-    if (!token) return
-    fetch('/api/addresses', { headers: { Authorization: `Bearer ${token}` } })
+    fetch('/api/addresses', { credentials: 'include' })
       .then(r => (r.ok ? r.json() : { addresses: [] }))
       .then((d: any) => {
         const addrs: SavedAddress[] = d.addresses ?? []
@@ -114,15 +109,10 @@ export default function CheckoutPage() {
           })
       })
       .catch(() => {})
-  }, [token])
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!token) {
-      toast.error('Please login first')
-      router.push('/login')
-      return
-    }
 
     const parsed = AddressSchema.safeParse(form)
     if (!parsed.success) {
@@ -134,7 +124,8 @@ export default function CheckoutPage() {
     try {
       const orderRes = await fetch('/api/orders', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           items: items.map(i => ({ product_id: i.product.id, quantity: i.quantity })),
           address: parsed.data,
@@ -146,7 +137,14 @@ export default function CheckoutPage() {
         razorpay_order_id?: string
         order_id?: number
       }
-      if (!orderRes.ok) throw new Error(orderData.error)
+      if (!orderRes.ok) {
+        if (orderRes.status === 401) {
+          toast.error('Please login first')
+          router.push('/login')
+          return
+        }
+        throw new Error(orderData.error)
+      }
 
       await new Promise<void>((resolve, reject) => {
         if (window.Razorpay) {
@@ -175,15 +173,16 @@ export default function CheckoutPage() {
           amount: orderData.amount,
           currency: 'INR',
           order_id: orderData.razorpay_order_id,
-          name: 'Vipan Medical Store',
-          description: 'Medicine Order',
+          name: 'VMS Store',
+          description: 'Product Order',
           prefill: { contact: form.phone },
           theme: { color: '#00666e' },
           handler: async (response: any) => {
             try {
               const verifyRes = await fetch('/api/payments/verify', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   razorpay_order_id: response.razorpay_order_id,
                   razorpay_payment_id: response.razorpay_payment_id,

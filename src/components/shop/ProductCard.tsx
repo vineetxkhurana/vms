@@ -152,7 +152,7 @@ export default function ProductCard({ product }: Props) {
             hidden={!!activeImg}
             style={{ fontSize: 40, opacity: 0.4 }}
           >
-            💊
+            💧
           </span>
           {product.brand === 'VMS' && (
             <div
