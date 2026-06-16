@@ -59,25 +59,20 @@ function LoginPageInner() {
 
   const isPhone = /^[6-9]\d{9}$/.test(identifier.trim())
 
-  // Handle Google OAuth redirect: show errors, sync pub-cookie -> localStorage
+  // Handle Google OAuth redirect: show errors, sync user info cookie -> localStorage
   useEffect(() => {
     const error = searchParams.get('error')
     if (error) toast.error(GOOGLE_ERRORS[error] ?? 'Sign-in failed. Please try again.')
 
-    const match = document.cookie.match(/vms_token_pub=([^;]+)/)
+    const match = document.cookie.match(/vms_user_info=([^;]+)/)
     if (match) {
       try {
-        const token = decodeURIComponent(match[1])
-        const payload = JSON.parse(atob(token.split('.')[1]))
-        localStorage.setItem('vms_token', token)
-        localStorage.setItem(
-          'vms_user',
-          JSON.stringify({ id: payload.sub, name: payload.name, role: payload.role }),
-        )
-        document.cookie = 'vms_token_pub=; Max-Age=0; path=/'
-        router.replace(['admin', 'staff'].includes(payload.role) ? '/admin' : '/')
+        const userInfo = JSON.parse(decodeURIComponent(match[1]))
+        localStorage.setItem('vms_user', JSON.stringify(userInfo))
+        document.cookie = 'vms_user_info=; Max-Age=0; path=/'
+        router.replace(['admin', 'staff'].includes(userInfo.role) ? '/admin' : '/')
       } catch {
-        /* token parse failed */
+        /* parse failed */
       }
     }
   }, [router])
@@ -114,7 +109,6 @@ function LoginPageInner() {
       toast.error(data.error ?? 'Invalid OTP')
       return
     }
-    localStorage.setItem('vms_token', data.token)
     localStorage.setItem('vms_user', JSON.stringify(data.user))
     toast.success('Welcome back!')
     router.push(data.user.role === 'admin' || data.user.role === 'staff' ? '/admin' : '/')
@@ -133,7 +127,6 @@ function LoginPageInner() {
       toast.error(data.error ?? 'Login failed')
       return
     }
-    localStorage.setItem('vms_token', data.token)
     localStorage.setItem('vms_user', JSON.stringify(data.user))
     toast.success('Welcome back!')
     router.push(data.user.role === 'admin' || data.user.role === 'staff' ? '/admin' : '/')
@@ -169,7 +162,7 @@ function LoginPageInner() {
             V
           </div>
           <h1 className="font-display font-black text-on-surface text-2xl">Sign in to VMS</h1>
-          <p className="text-on-surface-muted text-sm mt-1">Trusted pharmacy since 2000</p>
+          <p className="text-on-surface-muted text-sm mt-1">Trusted store since 2000</p>
         </div>
 
         {/* Card */}

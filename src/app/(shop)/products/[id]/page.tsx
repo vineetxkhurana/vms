@@ -96,7 +96,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               </div>
             ) : (
               <Icon
-                name="medication"
+                name="storefront"
                 fill
                 className="text-[120px] text-on-surface-muted opacity-20"
               />
@@ -233,8 +233,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   <Icon name="expand_more" className="group-open:rotate-180 transition-transform" />
                 </summary>
                 <p className="px-5 pb-4 text-sm text-on-surface-muted">
-                  Keep out of reach of children. Store in a cool, dry place. Consult your pharmacist
-                  before use.
+                  Keep out of reach of children. Store in a cool, dry place. Check the packaging for
+                  usage instructions.
                 </p>
               </details>
             </div>
@@ -271,7 +271,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                         />
                       ) : (
                         <span className="flex h-full items-center justify-center text-3xl opacity-30">
-                          💊
+                          🛒
                         </span>
                       )}
                     </div>

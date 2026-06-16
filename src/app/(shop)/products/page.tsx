@@ -14,27 +14,16 @@ const PAGE_SIZE = 20
 
 // Category icon mapping
 const CAT_ICONS: Record<string, string> = {
-  Medicines: 'medication',
-  'Vitamins & Supplements': 'nutrition',
+  Soaps: 'soap',
+  'Detergent Powder': 'local_laundry_service',
+  'Detergent Liquids': 'water_drop',
+  'Face Wash': 'face_retouching_natural',
+  'Ketchup & Sauce': 'lunch_dining',
+  'Sanitary Napkins': 'health_and_safety',
+  'Baby Diapers': 'child_care',
+  'Adult Diapers': 'elderly',
   'Skin Care': 'spa',
-  'Baby Care': 'child_care',
-  'First Aid': 'medical_services',
-  'Medical Devices': 'monitor_heart',
-  Ayurvedic: 'eco',
-  'Knee Support': 'accessibility_new',
-  'Back & Abdominal Support': 'airline_seat_recline_normal',
-  'Elbow & Arm Support': 'sports_martial_arts',
-  'Wrist & Hand Support': 'front_hand',
-  'Ankle & Foot Support': 'do_not_step',
-  'Cervical & Neck Support': 'person',
-  'Shoulder Support': 'sports_handball',
-  'Hot & Cold Therapy': 'thermostat',
-  'Bandages & Compression': 'healing',
-  'Body Massagers': 'self_improvement',
-  'Weighing Scales': 'scale',
-  'Memory Foam': 'king_bed',
-  'Mobility Aids': 'accessible',
-  'Surgical Instruments': 'biotech',
+  'Baby Care': 'child_friendly',
 }
 
 function ProductsContent() {

@@ -65,20 +65,15 @@ function RegisterPageInner() {
     const error = searchParams.get('error')
     if (error) toast.error(GOOGLE_ERRORS[error] ?? 'Sign-in failed. Please try again.')
 
-    const match = document.cookie.match(/vms_token_pub=([^;]+)/)
+    const match = document.cookie.match(/vms_user_info=([^;]+)/)
     if (match) {
       try {
-        const token = decodeURIComponent(match[1])
-        const payload = JSON.parse(atob(token.split('.')[1]))
-        localStorage.setItem('vms_token', token)
-        localStorage.setItem(
-          'vms_user',
-          JSON.stringify({ id: payload.sub, name: payload.name, role: payload.role }),
-        )
-        document.cookie = 'vms_token_pub=; Max-Age=0; path=/'
-        router.replace(['admin', 'staff'].includes(payload.role) ? '/admin' : '/')
+        const userInfo = JSON.parse(decodeURIComponent(match[1]))
+        localStorage.setItem('vms_user', JSON.stringify(userInfo))
+        document.cookie = 'vms_user_info=; Max-Age=0; path=/'
+        router.replace(['admin', 'staff'].includes(userInfo.role) ? '/admin' : '/')
       } catch {
-        /* token parse failed */
+        /* parse failed */
       }
     }
   }, [router])
@@ -112,7 +107,6 @@ function RegisterPageInner() {
     if (otpData.dev_code)
       toast(`Dev OTP: ${otpData.dev_code}`, { icon: '\u{1F511}', duration: 20000 })
     toast.success(`OTP sent to ${isPhone ? 'your phone' : 'your email'}`)
-    localStorage.setItem('vms_token', data.token)
     localStorage.setItem('vms_user', JSON.stringify(data.user))
     setStep('otp')
   }
@@ -131,7 +125,6 @@ function RegisterPageInner() {
       toast.error(data.error ?? 'Invalid OTP')
       return
     }
-    localStorage.setItem('vms_token', data.token)
     localStorage.setItem('vms_user', JSON.stringify(data.user))
     toast.success('Account verified! Welcome to VMS \u{1F389}')
     router.push('/')
@@ -160,7 +153,7 @@ function RegisterPageInner() {
             V
           </div>
           <h1 className="font-display font-black text-on-surface text-2xl">Create Account</h1>
-          <p className="text-on-surface-muted text-sm mt-1">Join VMS Pharmacy today</p>
+          <p className="text-on-surface-muted text-sm mt-1">Join VMS Store today</p>
         </div>
 
         <div className="glass rounded-3xl p-8">

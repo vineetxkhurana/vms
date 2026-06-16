@@ -150,7 +150,6 @@ describe('Input Validation', () => {
 
 describe('Cookie Configuration', () => {
   it('all auth cookies must have secure flag in production code', async () => {
-    // Read the source files and verify secure: true is present
     const fs = await import('fs')
     const files = [
       'src/app/api/auth/login/route.ts',
@@ -161,18 +160,19 @@ describe('Cookie Configuration', () => {
 
     for (const file of files) {
       const content = fs.readFileSync(file, 'utf8')
-      const cookieSetCalls = content.match(/cookies\.set\([^)]+\)/g) ?? []
+      // Match cookies.set() calls across multiple lines
+      const cookieSetCalls = content.match(/cookies\.set\([\s\S]*?\)\n/g) ?? []
       for (const call of cookieSetCalls) {
         expect(call).toContain('secure')
       }
     }
   })
 
-  it('logout endpoint clears both cookies', async () => {
+  it('logout endpoint clears auth cookies', async () => {
     const fs = await import('fs')
     const content = fs.readFileSync('src/app/api/auth/logout/route.ts', 'utf8')
     expect(content).toContain('vms_token')
-    expect(content).toContain('vms_token_pub')
+    expect(content).toContain('vms_user_info')
     expect(content).toContain('maxAge: 0')
   })
 })

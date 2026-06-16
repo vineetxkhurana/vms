@@ -13,8 +13,8 @@ const manrope = Manrope({
 })
 
 export const metadata: Metadata = {
-  title: 'VMS · Vipan Medical Store',
-  description: "India's trusted pharmacy platform for wholesalers, retailers and customers.",
+  title: 'VMS · Your Daily Essentials Store',
+  description: "India's trusted FMCG platform for wholesalers, retailers and customers.",
   icons: {
     icon: '/vms-icon.svg',
     shortcut: '/vms-icon.svg',

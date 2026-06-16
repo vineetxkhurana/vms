@@ -3,18 +3,12 @@ import { Icon } from '@/components/ui/Icon'
 import { PageHeader } from '@/components/ui/PageHeader'
 
 export const metadata: Metadata = {
-  title: 'Trust & Licenses — Vipan Medical Store',
+  title: 'Trust & Licenses — VMS Store',
   description:
-    'Vipan Medical Store is a fully licensed pharmacy. View our drug licenses, FSSAI certification, GST registration, and trust credentials.',
+    'VMS Store is a fully licensed retail business. View our FSSAI certification, GST registration, and trust credentials.',
 }
 
 const CERTS = [
-  {
-    icon: 'verified',
-    name: 'Drug License (Form 20 & 21)',
-    number: 'DL No: [DL-XXXX-XXXX]',
-    note: 'Issued by State Drug Controller',
-  },
   {
     icon: 'restaurant',
     name: 'FSSAI License',
@@ -46,7 +40,7 @@ const PILLARS = [
   {
     icon: 'check_circle',
     color: '#00e5a0',
-    title: 'Genuine Medicines Only',
+    title: 'Genuine Products Only',
     desc: 'Every product is sourced exclusively from licensed and authorized distributors and manufacturers.',
   },
   {
@@ -56,16 +50,16 @@ const PILLARS = [
     desc: 'Serving Amritsar and surrounding areas with reliable same-day to next-day local courier delivery.',
   },
   {
-    icon: 'ac_unit',
+    icon: 'inventory_2',
     color: '#7c3aed',
-    title: 'Cold Chain Maintained',
-    desc: 'Temperature-sensitive medicines are stored and transported with proper cold chain protocols.',
+    title: 'Quality Assured',
+    desc: 'All products are stored in proper conditions and checked for expiry and packaging integrity.',
   },
   {
-    icon: 'medical_services',
+    icon: 'support_agent',
     color: '#00e5a0',
-    title: 'Expert Pharmacist Consultation',
-    desc: 'Our qualified pharmacists are available in-store for guidance on dosage, interactions, and alternatives.',
+    title: 'Dedicated Customer Support',
+    desc: 'Our support team is available to help with product queries, orders, and returns.',
   },
 ]
 
@@ -86,16 +80,16 @@ export default function TrustPage() {
           </div>
           <PageHeader
             label="Licensed & Trusted"
-            title="Licensed & Trusted Pharmacy"
+            title="Licensed & Trusted Store"
             className="mb-4"
           />
           <p
             className="text-on-surface-muted max-w-2xl mx-auto leading-relaxed"
             style={{ fontFamily: 'Inter, sans-serif', fontSize: 16 }}
           >
-            Vipan Medical Store is a fully licensed pharmacy operating since 1999. All our medicines
-            are sourced directly from authorized distributors and manufacturers — never from
-            unverified or grey-market channels.
+            VMS Store is a fully licensed retail business operating since 1999. All our products are
+            sourced directly from authorized distributors and manufacturers — never from unverified
+            or grey-market channels.
           </p>
         </div>
 
@@ -275,10 +269,10 @@ export default function TrustPage() {
                 className="text-on-surface-muted leading-relaxed"
                 style={{ fontFamily: 'Inter, sans-serif' }}
               >
-                All medicines are procured from authorized stockists and carry manufacturer batch
-                numbers and expiry tracking. We never stock expired or near-expired medicines. Each
-                product is verified against the manufacturer&apos;s catalogue before shelving,
-                ensuring you always receive genuine, full-potency medication.
+                All products are procured from authorized distributors and carry manufacturer batch
+                numbers and expiry tracking. We never stock expired or near-expired products. Each
+                item is verified against the manufacturer&apos;s catalogue before shelving, ensuring
+                you always receive genuine, quality products.
               </p>
             </div>
           </div>
@@ -317,7 +311,7 @@ export default function TrustPage() {
               <Icon name="location_on" fill className="text-primary text-[28px]" />
               <h4 className="font-display font-bold text-on-surface">Our Address</h4>
               <p className="text-sm text-on-surface-muted leading-relaxed">
-                Vipan Medical Store
+                VMS Store
                 <br />
                 [Shop Address, Street]
                 <br />
@@ -354,7 +348,7 @@ export default function TrustPage() {
                 Chat on WhatsApp
               </a>
               <p className="text-xs text-on-surface-muted">
-                Quick queries, prescription uploads, order status
+                Quick queries, order status, and product inquiries
               </p>
             </div>
           </div>

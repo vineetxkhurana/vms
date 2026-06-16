@@ -92,17 +92,13 @@ export default function ImportPage() {
 
   async function handleImport() {
     if (!preview.length) return
-    const token = localStorage.getItem('vms_token')
-    if (!token) {
-      toast.error('Please login')
-      return
-    }
 
     setImporting(true)
     try {
       const res = await fetch('/api/admin/import', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rows: preview }),
       })
       const data = (await res.json()) as any

@@ -22,9 +22,8 @@ export default function OrdersPage() {
     }
     if (!ready || !user) return
 
-    const token = localStorage.getItem('vms_token')
     fetch('/api/orders', {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      credentials: 'include',
     })
       .then(r => {
         if (r.status === 401) {

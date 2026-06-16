@@ -64,16 +64,6 @@ export default function AccountPage() {
             >
               {user.name}
             </div>
-            <div
-              style={{
-                fontSize: 13,
-                color: '#8fafc7',
-                fontFamily: 'Inter, sans-serif',
-                marginTop: 4,
-              }}
-            >
-              {user.email ?? user.phone}
-            </div>
             <span
               style={{
                 display: 'inline-block',

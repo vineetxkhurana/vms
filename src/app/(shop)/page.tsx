@@ -13,27 +13,16 @@ type Category = { id: number; name: string }
 
 // Icon + color for each category
 const CAT_META: Record<string, { icon: string; color: string }> = {
-  Medicines: { icon: 'medication', color: '#00c2ff' },
-  'Vitamins & Supplements': { icon: 'nutrition', color: '#00e5a0' },
+  Soaps: { icon: 'soap', color: '#00c2ff' },
+  'Detergent Powder': { icon: 'local_laundry_service', color: '#00e5a0' },
+  'Detergent Liquids': { icon: 'water_drop', color: '#7c3aed' },
+  'Face Wash': { icon: 'face_retouching_natural', color: '#00c2ff' },
+  'Ketchup & Sauce': { icon: 'lunch_dining', color: '#00e5a0' },
+  'Sanitary Napkins': { icon: 'health_and_safety', color: '#7c3aed' },
+  'Baby Diapers': { icon: 'child_care', color: '#00c2ff' },
+  'Adult Diapers': { icon: 'elderly', color: '#00e5a0' },
   'Skin Care': { icon: 'spa', color: '#7c3aed' },
-  'Baby Care': { icon: 'child_care', color: '#00c2ff' },
-  'First Aid': { icon: 'medical_services', color: '#00e5a0' },
-  'Medical Devices': { icon: 'monitor_heart', color: '#7c3aed' },
-  Ayurvedic: { icon: 'eco', color: '#00c2ff' },
-  'Knee Support': { icon: 'accessibility_new', color: '#00e5a0' },
-  'Back & Abdominal Support': { icon: 'airline_seat_recline_normal', color: '#7c3aed' },
-  'Elbow & Arm Support': { icon: 'sports_martial_arts', color: '#00c2ff' },
-  'Wrist & Hand Support': { icon: 'front_hand', color: '#00e5a0' },
-  'Ankle & Foot Support': { icon: 'do_not_step', color: '#7c3aed' },
-  'Cervical & Neck Support': { icon: 'person', color: '#00c2ff' },
-  'Shoulder Support': { icon: 'sports_handball', color: '#00e5a0' },
-  'Hot & Cold Therapy': { icon: 'thermostat', color: '#7c3aed' },
-  'Bandages & Compression': { icon: 'healing', color: '#00c2ff' },
-  'Body Massagers': { icon: 'self_improvement', color: '#00e5a0' },
-  'Weighing Scales': { icon: 'scale', color: '#7c3aed' },
-  'Memory Foam': { icon: 'king_bed', color: '#00c2ff' },
-  'Mobility Aids': { icon: 'accessible', color: '#00e5a0' },
-  'Surgical Instruments': { icon: 'biotech', color: '#7c3aed' },
+  'Baby Care': { icon: 'child_friendly', color: '#00c2ff' },
 }
 
 const TRUST = [
@@ -45,12 +34,12 @@ const TRUST = [
   {
     icon: 'verified_user',
     title: '100% Genuine',
-    desc: 'Direct sourcing from certified medical manufacturers only.',
+    desc: 'Direct sourcing from certified brands and authorized distributors only.',
   },
   {
     icon: 'support_agent',
-    title: 'Expert Support',
-    desc: 'Certified pharmacists available 24/7 for your consultation.',
+    title: 'Customer Support',
+    desc: 'Dedicated support team available to help you with orders and queries.',
   },
 ]
 
@@ -120,7 +109,7 @@ export default function HomePage() {
             >
               <span className="w-2 h-2 rounded-full bg-secondary live-dot inline-block flex-shrink-0" />
               <span className="text-xs font-semibold text-on-surface-muted tracking-[0.18em] uppercase">
-                Established 1999 · Trusted Pharmacy
+                Established 1999 · Trusted Store
               </span>
             </div>
 
@@ -129,13 +118,13 @@ export default function HomePage() {
               className="slide-up d1 font-display font-black text-on-surface leading-[0.92] tracking-tight mb-6"
               style={{ fontSize: 'clamp(52px, 8vw, 96px)' }}
             >
-              Your Health,
+              Your Essentials,
               <br />
-              <span className="grad-text glow-text">Our Priority.</span>
+              <span className="grad-text glow-text">Delivered Fresh.</span>
             </h1>
 
             <p className="slide-up d2 text-lg text-on-surface-muted max-w-lg mb-10 font-light leading-relaxed">
-              Premium medicines &amp; healthcare essentials delivered to your doorstep. Trusted by
+              Premium FMCG products &amp; daily essentials delivered to your doorstep. Trusted by
               500+ families since 1999.
             </p>
 
@@ -155,7 +144,7 @@ export default function HomePage() {
                 href="/products?brand=VMS"
                 className="ghost-btn inline-flex items-center gap-2 px-8 py-4 rounded-full font-bold text-lg"
               >
-                VMS Generics <Icon name="medication" />
+                VMS Products <Icon name="storefront" />
               </Link>
             </div>
 
@@ -165,7 +154,7 @@ export default function HomePage() {
               style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
             >
               {[
-                ['50K+', 'Patients Served'],
+                ['50K+', 'Customers Served'],
                 ['1999', 'Founded'],
                 ['100%', 'Genuine'],
                 ['24–48h', 'Delivery'],
@@ -259,7 +248,7 @@ export default function HomePage() {
               products.map(p => <ProductCard key={p.id} product={p} />)
             ) : (
               <div className="col-span-4 text-center py-20 glass rounded-2xl">
-                <div className="text-5xl mb-4">💊</div>
+                <div className="text-5xl mb-4">🛒</div>
                 <p className="text-on-surface-muted font-medium">
                   Connect the database to see products
                 </p>
@@ -323,7 +312,7 @@ export default function HomePage() {
               />
             </div>
             <p className="text-sm text-on-surface-muted leading-relaxed">
-              Curating wellness and providing medical precision since 1999.
+              Curating quality products and daily essentials since 1999.
             </p>
           </div>
 
@@ -346,7 +335,7 @@ export default function HomePage() {
             {
               title: 'Contact',
               links: [
-                { href: '#', label: 'Vipan Medical Store' },
+                { href: '#', label: 'VMS Store' },
                 { href: '#', label: 'Punjab, India' },
               ],
             },
@@ -375,7 +364,7 @@ export default function HomePage() {
           style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
         >
           <p className="text-xs text-on-surface-muted">
-            © 2024 Vipan Medical Store. Curating Wellness Since 1999.
+            © 2024 VMS Store. Quality Products Since 1999.
           </p>
         </div>
       </footer>

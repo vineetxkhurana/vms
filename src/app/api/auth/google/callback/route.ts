@@ -140,8 +140,6 @@ export async function GET(req: Request) {
 
   const token = await signToken({
     sub: String(user.id),
-    email: user.email ?? null,
-    phone: user.phone ?? null,
     role: user.role,
     name: user.name,
   })
@@ -155,13 +153,18 @@ export async function GET(req: Request) {
     secure: true,
     maxAge: 60 * 60 * 24 * 7,
   })
-  res.cookies.set('vms_token_pub', token, {
-    path: '/',
-    httpOnly: false,
-    sameSite: 'lax',
-    secure: true,
-    maxAge: 60,
-  })
+  // Short-lived readable cookie with non-sensitive user info for client hydration
+  res.cookies.set(
+    'vms_user_info',
+    JSON.stringify({ id: user.id, name: user.name, role: user.role }),
+    {
+      path: '/',
+      httpOnly: false,
+      sameSite: 'lax',
+      secure: true,
+      maxAge: 60,
+    },
+  )
   res.cookies.set('oauth_state', '', {
     path: '/',
     httpOnly: true,

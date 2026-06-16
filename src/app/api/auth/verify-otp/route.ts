@@ -84,14 +84,11 @@ export async function POST(req: Request) {
 
   const token = await signToken({
     sub: String(user.id),
-    email: user.email ?? null,
-    phone: user.phone ?? null,
     role: user.role,
     name: user.name,
   })
 
   const res = NextResponse.json({
-    token,
     is_new_user: isNewUser,
     user: { id: user.id, name: user.name, role: user.role },
   })

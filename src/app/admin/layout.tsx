@@ -21,17 +21,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [role, setRole] = useState<UserRole | null>(null)
 
   useEffect(() => {
-    const raw = localStorage.getItem('vms_user')
-    if (!raw) {
-      router.push('/login')
-      return
-    }
-    const user = JSON.parse(raw) as { role: UserRole }
-    if (!['admin', 'staff'].includes(user.role)) {
-      router.push('/')
-      return
-    }
-    setRole(user.role)
+    fetch('/api/auth/me', { credentials: 'include' })
+      .then(r => r.json())
+      .then((d: any) => {
+        if (!d.user || !['admin', 'staff'].includes(d.user.role)) {
+          router.push('/login')
+          return
+        }
+        setRole(d.user.role)
+      })
+      .catch(() => {
+        router.push('/login')
+      })
   }, [router])
 
   const nav = ALL_NAV.filter(n => !n.adminOnly || role === 'admin')
@@ -106,13 +107,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="p-4" style={{ borderTop: '1px solid rgba(0,194,255,0.08)' }}>
           <button
             onClick={() => {
-              localStorage.removeItem('vms_token')
+              // Clear auth via server endpoint
+              fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {})
               localStorage.removeItem('vms_user')
-              // Clear auth via server endpoint + localStorage
-              fetch('/api/auth/logout', { method: 'POST' }).catch(() => {})
-              localStorage.removeItem('vms_token')
-              localStorage.removeItem('vms_user')
-              document.cookie = 'vms_token=; path=/; max-age=0'
               window.location.href = '/login'
             }}
             style={{

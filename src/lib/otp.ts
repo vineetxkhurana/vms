@@ -96,13 +96,13 @@ async function sendEmail(to: string, code: string): Promise<void> {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      from: 'VMS Pharmacy <noreply@vipanmedical.com>',
+      from: 'VMS Store <vkkhurana5@gmail.com>',
       to: [to],
       subject: `${code} — Your VMS verification code`,
       html: `
         <div style="font-family:Inter,sans-serif;max-width:480px;margin:0 auto;background:#050d1a;color:#e8f4fd;padding:40px;border-radius:16px">
           <h2 style="margin:0 0 8px;font-size:24px">Your OTP</h2>
-          <p style="color:#8fafc7;margin:0 0 32px">Use this code to sign in to VMS Pharmacy. It expires in 10 minutes.</p>
+          <p style="color:#8fafc7;margin:0 0 32px">Use this code to sign in to VMS Store. It expires in 10 minutes.</p>
           <div style="letter-spacing:16px;font-size:40px;font-weight:800;color:#00c2ff;text-align:center;padding:20px;background:rgba(0,194,255,0.06);border:1px solid rgba(0,194,255,0.2);border-radius:12px">${code}</div>
           <p style="color:#8fafc7;font-size:12px;margin-top:24px">If you didn't request this, ignore this email. Do not share this code.</p>
         </div>

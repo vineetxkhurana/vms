@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     return err('Enter a valid email or 10-digit phone number')
 
   const { code } = await sendOTP(db, normId, type)
-  // In dev, log code to server console only — never expose in API response
-  if (code) console.warn(`[OTP DEV] ${normId}: ${code}`)
+  // In dev only, log code to server console — never in production
+  if (code && process.env.NODE_ENV !== 'production') console.warn(`[OTP DEV] ${normId}: ${code}`)
   return ok({ ok: true })
 }

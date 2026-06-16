@@ -1,11 +1,9 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
 export type AuthUser = {
   id: number
   name: string
-  email: string | null
-  phone: string | null
   role: string
 }
 
@@ -13,29 +11,44 @@ export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [ready, setReady] = useState(false)
 
-  useEffect(() => {
-    const load = () => {
-      try {
-        const raw = localStorage.getItem('vms_user')
-        setUser(raw ? (JSON.parse(raw) as AuthUser) : null)
-      } catch {
-        setUser(null)
-      }
-      setReady(true)
+  const refresh = useCallback(() => {
+    // Read cached user from localStorage for instant UI, then validate via cookie
+    try {
+      const raw = localStorage.getItem('vms_user')
+      if (raw) setUser(JSON.parse(raw) as AuthUser)
+    } catch {
+      /* ignore */
     }
-    load()
-    // Sync across tabs / same-tab login
-    window.addEventListener('storage', load)
-    return () => window.removeEventListener('storage', load)
+
+    fetch('/api/auth/me', { credentials: 'include' })
+      .then(r => r.json())
+      .then((d: any) => {
+        const u = d.user as AuthUser | null
+        setUser(u)
+        if (u) {
+          localStorage.setItem('vms_user', JSON.stringify(u))
+        } else {
+          localStorage.removeItem('vms_user')
+        }
+      })
+      .catch(() => {
+        /* offline — keep cached user */
+      })
+      .finally(() => setReady(true))
   }, [])
+
+  useEffect(() => {
+    refresh()
+    window.addEventListener('storage', refresh)
+    return () => window.removeEventListener('storage', refresh)
+  }, [refresh])
 
   const signOut = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' })
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
     } catch {
       /* best-effort */
     }
-    localStorage.removeItem('vms_token')
     localStorage.removeItem('vms_user')
     setUser(null)
     window.location.href = '/'
