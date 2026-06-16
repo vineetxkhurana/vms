@@ -87,9 +87,9 @@ export default function TrustPage() {
             className="text-on-surface-muted max-w-2xl mx-auto leading-relaxed"
             style={{ fontFamily: 'Inter, sans-serif', fontSize: 16 }}
           >
-            VMS Store is a fully licensed retail business operating since 1999. All our products
-            are sourced directly from authorized distributors and manufacturers — never from
-            unverified or grey-market channels.
+            VMS Store is a fully licensed retail business operating since 1999. All our products are
+            sourced directly from authorized distributors and manufacturers — never from unverified
+            or grey-market channels.
           </p>
         </div>
 
@@ -271,8 +271,8 @@ export default function TrustPage() {
               >
                 All products are procured from authorized distributors and carry manufacturer batch
                 numbers and expiry tracking. We never stock expired or near-expired products. Each
-                item is verified against the manufacturer&apos;s catalogue before shelving,
-                ensuring you always receive genuine, quality products.
+                item is verified against the manufacturer&apos;s catalogue before shelving, ensuring
+                you always receive genuine, quality products.
               </p>
             </div>
           </div>

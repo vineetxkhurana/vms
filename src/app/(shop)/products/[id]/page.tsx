@@ -233,8 +233,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   <Icon name="expand_more" className="group-open:rotate-180 transition-transform" />
                 </summary>
                 <p className="px-5 pb-4 text-sm text-on-surface-muted">
-                  Keep out of reach of children. Store in a cool, dry place. Check the packaging
-                  for usage instructions.
+                  Keep out of reach of children. Store in a cool, dry place. Check the packaging for
+                  usage instructions.
                 </p>
               </details>
             </div>
