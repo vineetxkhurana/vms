@@ -1,4 +1,4 @@
-// Cloudflare D1 binding — accessed via request context
+// Cloudflare D1 binding - accessed via request context
 export type Env = {
   DB: D1Database
   BUCKET: R2Bucket

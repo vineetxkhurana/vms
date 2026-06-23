@@ -1,4 +1,4 @@
-/** Skeleton rows for a <tbody> — pass columns widths as px numbers or 'auto'. */
+/** Skeleton rows for a <tbody> - pass columns widths as px numbers or 'auto'. */
 export function SkeletonRows({ rows = 5, cols }: { rows?: number; cols: (number | 'auto')[] }) {
   return (
     <>
@@ -18,7 +18,7 @@ export function SkeletonRows({ rows = 5, cols }: { rows?: number; cols: (number 
   )
 }
 
-/** Skeleton cards stacked vertically — for list pages. */
+/** Skeleton cards stacked vertically - for list pages. */
 export function SkeletonList({ count = 3, height = 100 }: { count?: number; height?: number }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

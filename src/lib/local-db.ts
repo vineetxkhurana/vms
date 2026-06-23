@@ -1,7 +1,7 @@
 /**
  * Local development D1 shim using better-sqlite3.
  * Activated automatically in `next dev` when no Cloudflare env is present.
- * Loaded via dynamic require path split in api.ts — never bundled for edge.
+ * Loaded via dynamic require path split in api.ts - never bundled for edge.
  *
  * Setup once: `npm run db:local`  → applies migrations to local SQLite
  */
@@ -9,7 +9,7 @@
 class LocalStatement {
   private sql: string
   private params: unknown[]
-  private sqlite: any // typed as any — this file is only loaded at Node.js runtime
+  private sqlite: any // typed as any - this file is only loaded at Node.js runtime
 
   constructor(sqlite: any, sql: string, params: unknown[] = []) {
     this.sqlite = sqlite
@@ -58,7 +58,7 @@ class LocalStatement {
   async all<T>(): Promise<{ success: boolean; results: T[]; meta: Record<string, unknown> }> {
     try {
       const stmt = this.sqlite.prepare(this.sql)
-      // better-sqlite3: all() only works on SELECT — use run() for INSERT/UPDATE/DELETE
+      // better-sqlite3: all() only works on SELECT - use run() for INSERT/UPDATE/DELETE
       if (stmt.reader) {
         const results = stmt.all(...(this.params as Parameters<typeof this.sqlite.prepare>)) as T[]
         return {

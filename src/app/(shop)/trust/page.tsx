@@ -3,7 +3,7 @@ import { Icon } from '@/components/ui/Icon'
 import { PageHeader } from '@/components/ui/PageHeader'
 
 export const metadata: Metadata = {
-  title: 'Trust & Licenses — VMS Store',
+  title: 'Trust & Licenses - VMS Store',
   description:
     'VMS Store is a fully licensed retail business. View our FSSAI certification, GST registration, and trust credentials.',
 }
@@ -31,7 +31,7 @@ const CERTS = [
     icon: 'workspace_premium',
     name: 'ISO 9001:2015',
     number: 'Cert No: [ISO-XXXX] (if applicable)',
-    note: 'Quality Management System — optional',
+    note: 'Quality Management System - optional',
     optional: true,
   },
 ]
@@ -88,7 +88,7 @@ export default function TrustPage() {
             style={{ fontFamily: 'Inter, sans-serif', fontSize: 16 }}
           >
             VMS Store is a fully licensed retail business operating since 1999. All our products are
-            sourced directly from authorized distributors and manufacturers — never from unverified
+            sourced directly from authorized distributors and manufacturers - never from unverified
             or grey-market channels.
           </p>
         </div>
@@ -315,7 +315,7 @@ export default function TrustPage() {
                 <br />
                 [Shop Address, Street]
                 <br />
-                Amritsar, Punjab, India
+                Makhu, Punjab, India
               </p>
               <p className="text-xs text-on-surface-muted">
                 You can visit our store to verify our licenses in person.

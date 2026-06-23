@@ -2,7 +2,7 @@
  * POST /api/payments/webhook
  *
  * Razorpay sends a signed POST here for every payment event.
- * This is the authoritative payment confirmation — it fires even when the
+ * This is the authoritative payment confirmation - it fires even when the
  * customer closes the browser before our `handler` callback runs.
  *
  * Setup (one-time):
@@ -138,6 +138,6 @@ export async function POST(req: Request) {
       .bind(),
   ])
 
-  // Always return 200 — Razorpay retries on non-2xx responses
+  // Always return 200 - Razorpay retries on non-2xx responses
   return ok({ received: true })
 }

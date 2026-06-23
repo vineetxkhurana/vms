@@ -19,7 +19,7 @@ export function err(message: string, status = 400) {
 }
 
 /**
- * D1-backed rate limiter — works across all edge instances (no cold-start reset).
+ * D1-backed rate limiter - works across all edge instances (no cold-start reset).
  * Uses an UPSERT so it's a single DB round-trip.
  */
 export async function rateLimit(
@@ -65,7 +65,7 @@ export async function getDB(req: Request): Promise<D1Database | null> {
   const cloudflareDB = (req as any).env?.DB
   if (cloudflareDB) return cloudflareDB
 
-  // Local `next dev` — use SQLite shim
+  // Local `next dev` - use SQLite shim
   if (process.env.NODE_ENV === 'development') {
     const { getLocalDB } = await import('./local-db')
     return getLocalDB()

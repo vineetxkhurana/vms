@@ -180,8 +180,8 @@ export default function AdminUsersPage() {
                 </div>
               </td>
               <td className="px-5 py-4">
-                <p className="text-on-surface-muted text-xs">{u.email ?? '—'}</p>
-                <p className="text-on-surface-muted text-xs">{u.phone ?? '—'}</p>
+                <p className="text-on-surface-muted text-xs">{u.email ?? '-'}</p>
+                <p className="text-on-surface-muted text-xs">{u.phone ?? '-'}</p>
               </td>
               <td className="px-5 py-4">
                 <span

@@ -63,7 +63,7 @@ export default function AdminDashboard() {
     if (!ready) return
     setLoading(true)
     setError('')
-    // cache: 'no-store' — always get live data, never a stale browser-cached response
+    // cache: 'no-store' - always get live data, never a stale browser-cached response
     adminFetch('/api/admin/stats', { cache: 'no-store' } as RequestInit)
       .then(async r => {
         const d = await r.json()
@@ -303,7 +303,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Low stock alert — only render when there are actually items below threshold */}
+        {/* Low stock alert - only render when there are actually items below threshold */}
         {stats && stats.low_stock_items.length > 0 && (
           <div
             className="glass rounded-2xl p-6"

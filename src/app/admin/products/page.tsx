@@ -37,7 +37,7 @@ const VARIANT_TYPES = [
   { value: 'pack', label: 'Pack size' },
 ]
 
-/** Inline stock editor — click the number to edit, Enter/blur to save */
+/** Inline stock editor - click the number to edit, Enter/blur to save */
 function StockCell({
   product,
   adminFetch,
@@ -140,9 +140,9 @@ function expiryColor(exp: string | null | undefined): string {
   const now = new Date()
   const diffMonths =
     (expDate.getFullYear() - now.getFullYear()) * 12 + expDate.getMonth() - now.getMonth()
-  if (diffMonths < 0) return '#f87171' // expired — red
-  if (diffMonths <= 3) return '#fbbf24' // expiring soon — amber
-  return '#4ade80' // ok — green
+  if (diffMonths < 0) return '#f87171' // expired - red
+  if (diffMonths <= 3) return '#fbbf24' // expiring soon - amber
+  return '#4ade80' // ok - green
 }
 
 export default function AdminProductsPage() {
@@ -215,7 +215,7 @@ export default function AdminProductsPage() {
   const [previewUrl, setPreviewUrl] = useState<string>('')
 
   const handleImageUpload = async (file: File) => {
-    // Immediately show local preview via blob URL — no waiting for server
+    // Immediately show local preview via blob URL - no waiting for server
     const blob = URL.createObjectURL(file)
     setPreviewUrl(blob)
     setUploading(true)
@@ -225,15 +225,15 @@ export default function AdminProductsPage() {
       const res = await adminFetch('/api/upload', { method: 'POST', body: fd })
       const d = (await res.json()) as any
       if (res.ok && d.url && !d.url.includes('placeholder')) {
-        // Real R2 URL — use it and release the blob
+        // Real R2 URL - use it and release the blob
         setForm(f => ({ ...f, image_url: d.url }))
         URL.revokeObjectURL(blob)
         setPreviewUrl('')
         toast.success('Image uploaded')
       } else {
-        // R2 not set up — keep the local blob preview and store it as-is
+        // R2 not set up - keep the local blob preview and store it as-is
         setForm(f => ({ ...f, image_url: blob }))
-        toast.success('Image set (stored locally — configure R2 for persistence)')
+        toast.success('Image set (stored locally - configure R2 for persistence)')
       }
     } catch {
       toast.error('Upload failed')
@@ -418,10 +418,10 @@ export default function AdminProductsPage() {
             </td>
             <td className="px-4 py-3 font-bold text-primary">₹{(p.price / 100).toFixed(0)}</td>
             <td className="px-4 py-3 text-on-surface-muted text-xs">
-              {p.price_retailer ? `₹${(p.price_retailer / 100).toFixed(0)}` : '—'}
+              {p.price_retailer ? `₹${(p.price_retailer / 100).toFixed(0)}` : '-'}
             </td>
             <td className="px-4 py-3 text-on-surface-muted text-xs">
-              {p.price_wholesaler ? `₹${(p.price_wholesaler / 100).toFixed(0)}` : '—'}
+              {p.price_wholesaler ? `₹${(p.price_wholesaler / 100).toFixed(0)}` : '-'}
             </td>
             <td className="px-4 py-3">
               <StockCell product={p} adminFetch={adminFetch} onSaved={load} />
@@ -430,7 +430,7 @@ export default function AdminProductsPage() {
               className="px-4 py-3 text-xs font-mono"
               style={{ color: expiryColor(p.expiry_date) }}
             >
-              {p.expiry_date ?? '—'}
+              {p.expiry_date ?? '-'}
             </td>
             <td className="px-4 py-3">
               <span
@@ -491,7 +491,7 @@ export default function AdminProductsPage() {
         ))}
       </AdminTable>
 
-      {/* ── Add / Edit Modal — rendered via portal so fixed pos is always viewport-relative ── */}
+      {/* ── Add / Edit Modal - rendered via portal so fixed pos is always viewport-relative ── */}
       {modal &&
         typeof document !== 'undefined' &&
         createPortal(
@@ -654,7 +654,7 @@ export default function AdminProductsPage() {
                     onChange={e => setForm(f => ({ ...f, category_id: e.target.value }))}
                     className="input-glass"
                   >
-                    <option value="">— Select category —</option>
+                    <option value="">- Select category -</option>
                     {categories.map(c => (
                       <option key={c.id} value={c.id}>
                         {c.name}
@@ -728,7 +728,7 @@ export default function AdminProductsPage() {
                         letterSpacing: 0,
                       }}
                     >
-                      (optional — groups same products)
+                      (optional - groups same products)
                     </span>
                   </label>
                   <div className="grid grid-cols-3 gap-3">

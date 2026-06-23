@@ -14,7 +14,7 @@ export function createRazorpayOrder(amountPaise: number, receiptId: string) {
       currency: 'INR',
       receipt: receiptId,
     }),
-  }).then(r => r.json())
+  }).then(r => r.json() as any)
 }
 
 export async function verifyPaymentSignature(

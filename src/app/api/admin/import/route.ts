@@ -1,7 +1,7 @@
 /**
  * POST /api/admin/import
  * Accepts pre-parsed product rows from the CSV import UI.
- * Upserts by name (case-insensitive) — updates stock/price if product exists, inserts if new.
+ * Upserts by name (case-insensitive) - updates stock/price if product exists, inserts if new.
  * All prices are in rupees from the UI; converted to paise here.
  */
 import { ok, err, getDB } from '@/lib/api'
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
 
   for (const row of rows) {
     try {
-      // Prices are in rupees — convert to paise
+      // Prices are in rupees - convert to paise
       const pricePaise = Math.round(row.price * 100)
       const retailerPaise = row.price_retailer ? Math.round(row.price_retailer * 100) : null
       const wholesalerPaise = row.price_wholesaler ? Math.round(row.price_wholesaler * 100) : null

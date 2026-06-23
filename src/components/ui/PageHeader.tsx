@@ -4,7 +4,7 @@ interface Props {
   className?: string
 }
 
-/** Eyebrow label + page title — used on every shop and admin page. */
+/** Eyebrow label + page title - used on every shop and admin page. */
 export function PageHeader({ label, title, className = '' }: Props) {
   return (
     <div className={className}>

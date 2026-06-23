@@ -55,7 +55,7 @@ export default function AnalyticsPage() {
 
   const views = data?.funnel.find(f => f.event === 'product_view')?.count ?? 0
   const orders = data?.funnel.find(f => f.event === 'order_placed')?.count ?? 0
-  const convRate = views > 0 ? ((orders / views) * 100).toFixed(1) : '—'
+  const convRate = views > 0 ? ((orders / views) * 100).toFixed(1) : '-'
 
   return (
     <>

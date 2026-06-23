@@ -28,7 +28,7 @@
   }
 }
 
-/* Utility — apply to any page wrapper that needs nav-aware spacing */
+/* Utility - apply to any page wrapper that needs nav-aware spacing */
 .page-spacing {
   padding-top: var(--page-pt);
   padding-bottom: var(--page-pb);
@@ -40,8 +40,6 @@
     'wght' 400,
     'GRAD' 0,
     'opsz' 24;
-  /* Prevent raw text flash — keep invisible until icon font resolves */
-  font-display: block;
   user-select: none;
 }
 

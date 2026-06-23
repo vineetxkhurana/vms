@@ -15,7 +15,7 @@ export async function POST(req: Request) {
   const db = await getDB(req)
   if (!db) return err('Service unavailable', 503)
 
-  // Must be a logged-in user — prevents spoofed verify calls
+  // Must be a logged-in user - prevents spoofed verify calls
   const user = await getUser(req)
   if (!user) return err('Unauthorized', 401)
 
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
   )
   if (!valid) return err('Payment verification failed', 400)
 
-  // Only update orders belonging to this user — prevents user A confirming user B's order
+  // Only update orders belonging to this user - prevents user A confirming user B's order
   const _result = await db
     .prepare(
       `

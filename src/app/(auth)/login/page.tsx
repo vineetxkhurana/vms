@@ -167,7 +167,7 @@ function LoginPageInner() {
 
         {/* Card */}
         <div className="glass rounded-3xl p-8">
-          {/* Google sign-in — shown only on the first step */}
+          {/* Google sign-in - shown only on the first step */}
           {step === 'identifier' && (
             <>
               <a

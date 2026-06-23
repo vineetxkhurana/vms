@@ -39,11 +39,11 @@ export async function GET(req: Request) {
     state,
   })
 
-  const res = Response.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params}`)
-  const headers = new Headers(res.headers)
-  headers.append(
-    'Set-Cookie',
-    `oauth_state=${state}; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=600`,
-  )
-  return new Response(res.body, { status: res.status, headers })
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: `https://accounts.google.com/o/oauth2/v2/auth?${params}`,
+      'Set-Cookie': `oauth_state=${state}; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=600`,
+    },
+  })
 }
