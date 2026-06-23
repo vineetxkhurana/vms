@@ -56,11 +56,7 @@ export default function PoliciesPage() {
           >
             <Icon name="description" fill className="text-primary" style={{ fontSize: 40 }} />
           </div>
-          <PageHeader
-            label="Policies"
-            title="Store Policies"
-            className="mb-4"
-          />
+          <PageHeader label="Policies" title="Store Policies" className="mb-4" />
           <p
             className="text-on-surface-muted max-w-2xl mx-auto leading-relaxed"
             style={{ fontFamily: 'Inter, sans-serif', fontSize: 16 }}

@@ -114,9 +114,7 @@ export default function TermsPage() {
               },
             ].map(section => (
               <div key={section.title} className="mb-8">
-                <h2
-                  className="font-display font-bold text-on-surface text-lg mb-3"
-                >
+                <h2 className="font-display font-bold text-on-surface text-lg mb-3">
                   {section.title}
                 </h2>
                 <p className="text-sm leading-relaxed" style={{ color: '#b0c8db' }}>
