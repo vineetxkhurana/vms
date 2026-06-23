@@ -34,7 +34,7 @@ export async function POST(req: Request) {
 
   const { items, address } = body.data
 
-  // Validate stock and calculate total — apply tier pricing
+  // Validate stock and calculate total - apply tier pricing
   const productIds = items.map(i => i.product_id)
   const { results: products } = await db
     .prepare(
@@ -77,7 +77,8 @@ export async function POST(req: Request) {
   // In dev (no Razorpay keys), create a mock order id; in prod this hits Razorpay
   let razorpayOrderId: string | null = null
   if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
-    const rzp = (await createRazorpayOrder(grandTotal, `vms-${Date.now()}`)) as { id: string }
+    const rzp = await createRazorpayOrder(grandTotal, `vms-${Date.now()}`)
+    if (!rzp.id) return err('Failed to create Razorpay order', 502)
     razorpayOrderId = rzp.id
   }
 
@@ -115,7 +116,7 @@ export async function POST(req: Request) {
   }
 
   const { country, sessionId } = analyticsContext(req)
-  // Fire-and-forget — don't await, don't block the response
+  // Fire-and-forget - don't await, don't block the response
   trackEvent(
     db,
     'order_placed',
@@ -135,7 +136,7 @@ export async function POST(req: Request) {
   )
 }
 
-// Fire-and-forget analytics after return — no await needed
+// Fire-and-forget analytics after return - no await needed
 
 export async function GET(req: Request) {
   const db = await getDB(req)

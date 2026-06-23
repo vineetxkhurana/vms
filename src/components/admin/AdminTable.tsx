@@ -3,7 +3,7 @@ import { Icon } from '@/components/ui/Icon'
 
 interface Props {
   headers: string[]
-  /** px widths for skeleton cells — length must match headers. 'auto' = stretch */
+  /** px widths for skeleton cells - length must match headers. 'auto' = stretch */
   skeletonCols?: (number | 'auto')[]
   skeletonRows?: number
   loading: boolean

@@ -1,5 +1,5 @@
 /**
- * GET /api/admin/stats — admin-only revenue + inventory summary
+ * GET /api/admin/stats - admin-only revenue + inventory summary
  */
 import { NextResponse } from 'next/server'
 import { err, getDB } from '@/lib/api'
@@ -28,7 +28,7 @@ export async function GET(req: Request) {
       ),
       // Orders by status
       db.prepare('SELECT status, COUNT(*) as count FROM orders GROUP BY status'),
-      // Low stock products — only genuinely low (< 5 units); matches the stat card threshold
+      // Low stock products - only genuinely low (< 5 units); matches the stat card threshold
       db.prepare(
         'SELECT id, name, stock FROM products WHERE is_active=1 AND stock < 5 ORDER BY stock ASC LIMIT 8',
       ),

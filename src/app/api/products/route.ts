@@ -5,7 +5,7 @@ import { getUser, requireAdmin, resolvePrice } from '@/lib/auth'
 export const runtime = 'edge'
 
 // GET /api/products?page=1&category=1&search=paracetamol&brand=VMS
-// GET /api/products?ids=1,2,3   (cart rehydration — returns fresh tier-priced products by ID)
+// GET /api/products?ids=1,2,3   (cart rehydration - returns fresh tier-priced products by ID)
 export async function GET(req: Request) {
   const db = await getDB(req)
   if (!db) return ok({ products: [], page: 1, limit: 20 })
@@ -149,7 +149,7 @@ export async function GET(req: Request) {
   return ok({ products, page, limit, total })
 }
 
-// POST /api/products — admin only
+// POST /api/products - admin only
 export async function POST(req: Request) {
   const db = await getDB(req)
   if (!db) return err('Service unavailable', 503)

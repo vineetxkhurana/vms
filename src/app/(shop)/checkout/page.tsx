@@ -163,7 +163,7 @@ export default function CheckoutPage() {
       if (!orderData.razorpay_order_id) {
         clear()
         router.push(`/orders?success=1&order=${orderData.order_id}`)
-        toast.success('Order placed! (dev mode — payment skipped)')
+        toast.success('Order placed! (dev mode - payment skipped)')
         return
       }
 
@@ -196,7 +196,7 @@ export default function CheckoutPage() {
               } else {
                 reject(
                   new Error(
-                    'Payment verification failed. Your payment may still be processing — check your orders in a few minutes or contact support.',
+                    'Payment verification failed. Your payment may still be processing - check your orders in a few minutes or contact support.',
                   ),
                 )
               }
@@ -212,7 +212,7 @@ export default function CheckoutPage() {
             ondismiss: () =>
               reject(
                 new Error(
-                  'Payment cancelled. Your order is saved — you can retry from your orders page.',
+                  'Payment cancelled. Your order is saved - you can retry from your orders page.',
                 ),
               ),
           },

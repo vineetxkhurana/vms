@@ -12,7 +12,7 @@ import { distribution } from '@/lib/observability'
 const DSN = process.env.NEXT_PUBLIC_SENTRY_DSN
 
 function WebVitalsReporter() {
-  // report-web-vitals hook is Next.js built-in — no extra package needed
+  // report-web-vitals hook is Next.js built-in - no extra package needed
   useEffect(() => {
     if (typeof window === 'undefined' || !DSN) return
 

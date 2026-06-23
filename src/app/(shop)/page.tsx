@@ -70,7 +70,7 @@ export default function HomePage() {
           <div className="absolute inset-0 z-0">
             <HeroScene />
           </div>
-          {/* Top fade — softens where helix enters */}
+          {/* Top fade - softens where helix enters */}
           <div
             className="absolute inset-x-0 top-0 z-[2] pointer-events-none"
             style={{
@@ -78,7 +78,7 @@ export default function HomePage() {
               background: 'linear-gradient(to bottom, #050d1a 0%, transparent 100%)',
             }}
           />
-          {/* Bottom fade — softens where helix exits */}
+          {/* Bottom fade - softens where helix exits */}
           <div
             className="absolute inset-x-0 bottom-0 z-[2] pointer-events-none"
             style={{
@@ -326,10 +326,13 @@ export default function HomePage() {
               ],
             },
             {
-              title: 'Policy',
+              title: 'Policies',
               links: [
-                { href: '#', label: 'Shipping Policy' },
-                { href: '#', label: 'Privacy' },
+                { href: '/policies/shipping', label: 'Shipping Policy' },
+                { href: '/policies/privacy', label: 'Privacy Policy' },
+                { href: '/policies/refund', label: 'Refund Policy' },
+                { href: '/policies/cancellation', label: 'Cancellation' },
+                { href: '/policies/terms', label: 'Terms & Conditions' },
               ],
             },
             {

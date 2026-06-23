@@ -1,5 +1,5 @@
 /**
- * OTP utility — generate, store, send, and verify 6-digit OTPs.
+ * OTP utility - generate, store, send, and verify 6-digit OTPs.
  *
  * Delivery (configure via env vars):
  *   Email → RESEND_API_KEY       (https://resend.com, free tier: 3000/mo)
@@ -98,7 +98,7 @@ async function sendEmail(to: string, code: string): Promise<void> {
     body: JSON.stringify({
       from: 'VMS Store <vkkhurana5@gmail.com>',
       to: [to],
-      subject: `${code} — Your VMS verification code`,
+      subject: `${code} - Your VMS verification code`,
       html: `
         <div style="font-family:Inter,sans-serif;max-width:480px;margin:0 auto;background:#050d1a;color:#e8f4fd;padding:40px;border-radius:16px">
           <h2 style="margin:0 0 8px;font-size:24px">Your OTP</h2>

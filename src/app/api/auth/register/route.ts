@@ -1,7 +1,7 @@
 /**
  * POST /api/auth/register
  * Body: { identifier: string (email or phone), name: string, password?: string }
- * Password is optional — users can also use OTP-only auth.
+ * Password is optional - users can also use OTP-only auth.
  */
 import { hash } from 'bcryptjs'
 import { ok, err, rateLimit, getDB } from '@/lib/api'
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
     .bind(normId, name, password_hash)
     .first<{ id: number; role: UserRole }>()
 
-  // Don't issue a session token — user must verify via OTP first
+  // Don't issue a session token - user must verify via OTP first
   const { country, sessionId } = analyticsContext(req)
   trackEvent(
     db,

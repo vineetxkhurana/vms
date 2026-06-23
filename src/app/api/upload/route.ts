@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
     await bucket.put(key, bytes, { httpMetadata: { contentType: file.type } })
     return NextResponse.json({ url: `https://pub-47fdbf3013fa480eaa61d770e3686eaf.r2.dev/${key}` })
   } catch {
-    // R2 not available — return SVG placeholder
+    // R2 not available - return SVG placeholder
     return NextResponse.json({ url: `/placeholder-product.svg` })
   }
 }

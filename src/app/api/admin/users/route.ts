@@ -1,6 +1,6 @@
 /**
- * GET  /api/admin/users        — list customers/retailers/wholesalers (admin only)
- * PATCH /api/admin/users       — update user role (admin only)
+ * GET  /api/admin/users        - list customers/retailers/wholesalers (admin only)
+ * PATCH /api/admin/users       - update user role (admin only)
  */
 import { NextResponse } from 'next/server'
 import { ok, err, getDB } from '@/lib/api'

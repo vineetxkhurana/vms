@@ -1,5 +1,5 @@
 /**
- * Edge middleware — protects /admin/* routes via JWT verification + logs all requests.
+ * Edge middleware - protects /admin/* routes via JWT verification + logs all requests.
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { jwtVerify } from 'jose'
@@ -21,7 +21,7 @@ export async function middleware(req: NextRequest) {
   try {
     let response: NextResponse
 
-    // ── Admin guard — verify JWT signature + role ─────────────────
+    // ── Admin guard - verify JWT signature + role ─────────────────
     if (pathname.startsWith('/admin') || pathname.startsWith('/api/admin')) {
       const token =
         req.cookies.get(COOKIE)?.value ?? req.headers.get('authorization')?.replace('Bearer ', '')

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 /**
- * Admin auth hook — validates session via HttpOnly cookie.
+ * Admin auth hook - validates session via HttpOnly cookie.
  * `adminFetch`: a fetch wrapper that includes cookies and redirects on 401/403.
  */
 export function useAdminAuth() {

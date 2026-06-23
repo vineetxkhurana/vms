@@ -21,12 +21,12 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "font-src 'self' https://fonts.gstatic.com",
-      "img-src 'self' data: blob: https://*.r2.dev https://pub-*.r2.dev",
-      "connect-src 'self' https://api.razorpay.com https://checkout.razorpay.com",
-      'frame-src https://api.razorpay.com https://checkout.razorpay.com',
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com https://checkout-static-next.razorpay.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://checkout-static-next.razorpay.com",
+      "font-src 'self' https://fonts.gstatic.com https://checkout-static-next.razorpay.com",
+      "img-src 'self' data: blob: https://*.r2.dev",
+      "connect-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://checkout-static-next.razorpay.com",
+      'frame-src https://api.razorpay.com https://checkout.razorpay.com https://checkout-static-next.razorpay.com',
     ].join('; '),
   },
 ]
@@ -51,7 +51,7 @@ const nextConfig: NextConfig = {
     // Suppress bcryptjs crypto warning (works at runtime via nodejs_compat)
     config.resolve.fallback = { ...config.resolve.fallback, crypto: false }
     // Treat native-module chain as externals so edge bundles don't try to inline them
-    const nativeExternals = ['better-sqlite3', 'bindings', 'file-uri-to-path']
+    const nativeExternals = ['better-sqlite3', 'bindings', 'file-uri-to-path', 'fs', 'path']
     const existing = Array.isArray(config.externals)
       ? config.externals
       : config.externals

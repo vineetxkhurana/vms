@@ -1,5 +1,5 @@
 /**
- * Observability helpers — metrics & structured logs via Sentry.
+ * Observability helpers - metrics & structured logs via Sentry.
  *
  * Metrics  → Sentry Application Metrics (counters, distributions, gauges, sets)
  * Logs     → Sentry structured log capture (with level, context, tags)
@@ -78,7 +78,7 @@ export function distribution(
 }
 
 /**
- * Set a gauge (current value — e.g. active sessions, cart size).
+ * Set a gauge (current value - e.g. active sessions, cart size).
  */
 export function gauge(name: string, value: number, tags?: Record<string, string>) {
   try {

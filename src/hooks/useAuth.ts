@@ -32,7 +32,7 @@ export function useAuth() {
         }
       })
       .catch(() => {
-        /* offline — keep cached user */
+        /* offline - keep cached user */
       })
       .finally(() => setReady(true))
   }, [])

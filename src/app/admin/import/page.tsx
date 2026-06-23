@@ -81,7 +81,7 @@ export default function ImportPage() {
       try {
         const rows = parseCSV(ev.target?.result as string)
         setPreview(rows)
-        toast.success(`Parsed ${rows.length} rows — review and confirm import`)
+        toast.success(`Parsed ${rows.length} rows - review and confirm import`)
       } catch (err: any) {
         toast.error(err.message)
         setPreview([])
@@ -145,9 +145,9 @@ export default function ImportPage() {
               sku, batch_number, expiry_date (YYYY-MM), price_retailer, price_wholesaler, brand
             </code>
           </li>
-          <li>Upload the file below — preview will show before any changes are made</li>
+          <li>Upload the file below - preview will show before any changes are made</li>
           <li>
-            Prices should be in <strong>rupees</strong> (₹) — they will be converted to paise
+            Prices should be in <strong>rupees</strong> (₹) - they will be converted to paise
             automatically
           </li>
         </ol>
@@ -264,20 +264,20 @@ export default function ImportPage() {
                 {preview.map((row, i) => (
                   <tr key={i} style={{ borderBottom: '1px solid rgba(0,194,255,0.06)' }}>
                     <td className="px-4 py-3 text-on-surface font-medium">{row.name}</td>
-                    <td className="px-4 py-3 text-on-surface-muted">{row.batch_number ?? '—'}</td>
+                    <td className="px-4 py-3 text-on-surface-muted">{row.batch_number ?? '-'}</td>
                     <td
                       className="px-4 py-3 font-mono text-sm"
                       style={{ color: expiryColor(row.expiry_date) }}
                     >
-                      {row.expiry_date ?? '—'}
+                      {row.expiry_date ?? '-'}
                     </td>
                     <td className="px-4 py-3 text-on-surface">{row.stock}</td>
                     <td className="px-4 py-3 text-on-surface">₹{row.price}</td>
                     <td className="px-4 py-3 text-on-surface-muted">
-                      {row.price_retailer ? `₹${row.price_retailer}` : '—'}
+                      {row.price_retailer ? `₹${row.price_retailer}` : '-'}
                     </td>
                     <td className="px-4 py-3 text-on-surface-muted">
-                      {row.price_wholesaler ? `₹${row.price_wholesaler}` : '—'}
+                      {row.price_wholesaler ? `₹${row.price_wholesaler}` : '-'}
                     </td>
                     <td className="px-4 py-3 text-on-surface-muted">{row.brand ?? 'other'}</td>
                   </tr>

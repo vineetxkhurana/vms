@@ -4,7 +4,7 @@ import type { CartItem, Product } from '@/types'
 
 const KEY = 'vms_cart'
 
-// ── Persisted shape (lean — no prices stored) ─────────────────────────────────
+// ── Persisted shape (lean - no prices stored) ─────────────────────────────────
 type PersistedItem = { product_id: number; quantity: number }
 
 // ── Module-level singleton store ──────────────────────────────────────────────
@@ -89,11 +89,11 @@ export function useCart() {
               _notify()
             })
             .catch(() => {
-              /* network error — keep items empty */
+              /* network error - keep items empty */
             })
         }
       } catch {
-        /* corrupt storage — start fresh */
+        /* corrupt storage - start fresh */
       }
     }
 
